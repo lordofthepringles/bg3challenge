@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baldur's Gate 3 Challenge Generator</title>
+    <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --container-bg: white;
+            --text-color: #333;
+            --header-gradient-start: #1e3c72;
+            --header-gradient-end: #2a5298;
+            --controls-bg: white;
+            --border-color: #e9ecef;
+            --result-section-bg: #f8f9fa;
+            --input-bg: white;
+            --input-border: #dee2e6;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --container-bg: #0f1419;
+            --text-color: #e4e4e7;
+            --header-gradient-start: #16213e;
+            --header-gradient-end: #0f3460;
+            --controls-bg: #1a1f2e;
+            --border-color: #2d3748;
+            --result-section-bg: #252b3b;
+            --input-bg: #1a1f2e;
+            --input-border: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--container-bg);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: var(--controls-bg);
+            border-bottom: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-light {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-medium {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-extreme {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .btn-random {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .result {
+            padding: 30px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .character-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .character-info h3 {
+            margin-bottom: 10px;
+        }
+
+        .result-section {
+            margin-bottom: 25px;
+            background: var(--result-section-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: background 0.3s ease;
+        }
+
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .result-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .result-section li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-left: 25px;
+            position: relative;
+            color: var(--text-color);
+        }
+
+        .result-section li:before {
+            content: "⚔️";
+            position: absolute;
+            left: 0;
+        }
+
+        .result-section li:last-child {
+            border-bottom: none;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save, .btn-copy {
+            background: #28a745;
+        }
+
+        .btn-new {
+            background: #dc3545;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 10000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .pro-tip-box {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        [data-theme="dark"] .pro-tip-box {
+            background: #1a2332;
+            border-color: #2196F3;
+        }
+
+        [data-theme="dark"] .pro-tip-box h3 {
+            color: #64b5f6 !important;
+        }
+
+        [data-theme="dark"] .pro-tip-box p {
+            color: #e4e4e7 !important;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle Dark Mode">🌙</button>
+            <h1>⚔️ Baldur's Gate 3 ⚔️</h1>
+            <h1>Challenge Generator</h1>
+            <p>Generate random challenge runs with unique constraints and modifiers</p>
+            <div style="margin-top: 20px;">
+                <button onclick="showLoadChallengeDialog()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; font-size: 1em; font-weight: 600;">
+                    📥 Load Challenge
+                </button>
+                <button onclick="showStreamerMode()" style="background: linear-gradient(135deg, #9146FF 0%, #6441a5 100%); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; font-size: 1em; font-weight: 600;">
+                    📺 Streamer Mode
+                </button>
+                <button onclick="showRandomNumberGenerator()" style="background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; font-size: 1em; font-weight: 600;">
+                    🎲 Dice Roller
+                </button>
+            </div>
+        </div>
+
+        <div class="controls pro-tip-box">
+            <h3 style="color: #1976D2; margin-bottom: 10px;">💡 Pro Tip: Start Small!</h3>
+            <p style="margin: 5px 0; line-height: 1.6; color: #333;">
+                <strong>Recommended approach:</strong> Pick only <strong>1-2 modifiers per category</strong> for your actual playthrough.
+                The generator may suggest many modifiers, but combining too many makes the game frustrating rather than fun.
+            </p>
+            <p style="margin: 5px 0; line-height: 1.6; color: #333;">
+                <strong>Example:</strong> "All Monks party" + "No healing potions" + "Must romance Karlach" = Fun challenge!<br>
+                <strong>Too much:</strong> Adding 5 more modifiers = Probably not fun anymore.
+            </p>
+            <p style="margin: 5px 0; line-height: 1.6; color: #333;">
+                <strong>Strategy:</strong> Generate a full challenge, then cherry-pick your favorite 3-5 modifiers for your run. Save the rest for next time!
+            </p>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="btn-light" onclick="generateChallenge('light')">
+                    Light Challenge
+                </button>
+                <button class="btn-medium" onclick="generateChallenge('medium')">
+                    Medium Challenge
+                </button>
+                <button class="btn-extreme" onclick="generateChallenge('extreme')">
+                    Extreme Challenge
+                </button>
+                <button class="btn-random" onclick="generateChallenge('random')">
+                    Random Everything
+                </button>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 10px; color: var(--text-color);">👥 Party Size Presets</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;" onclick="generateChallenge('tav-plus-1')">
+                        Tav + 1 Companion
+                    </button>
+                    <button style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;" onclick="generateChallenge('tav-plus-2')">
+                        Tav + 2 Companions
+                    </button>
+                    <button style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;" onclick="generateChallenge('tav-plus-3')">
+                        Tav + 3 Companions (Full Party)
+                    </button>
+                </div>
+            </div>
+
+            <details style="margin-top: 20px;">
+                <summary style="cursor: pointer; font-weight: 600; padding: 15px; background: var(--result-section-bg); border-radius: 8px; border: 2px solid var(--border-color); transition: all 0.3s ease;">
+                    🎯 Custom Options (Click to expand)
+                </summary>
+                <div style="margin-top: 15px; padding: 20px; background: var(--result-section-bg); border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">Party Mods (0-20):</label>
+                            <input type="number" id="party-mods" min="0" max="20" value="1" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">Combat Mods (0-31):</label>
+                            <input type="number" id="combat-mods" min="0" max="31" value="2" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">Difficulty Mods (0-19):</label>
+                            <input type="number" id="difficulty-mods" min="0" max="19" value="1" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">Roleplay Mods (0-86):</label>
+                            <input type="number" id="roleplay-mods" min="0" max="86" value="1" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color);">Special Mods (0-51):</label>
+                            <input type="number" id="special-mods" min="0" max="51" value="1" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--text-color);">
+                            <input type="checkbox" id="include-race" style="margin-right: 8px; width: 18px; height: 18px;">
+                            Include Race Challenge
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--text-color);">
+                            <input type="checkbox" id="include-class" style="margin-right: 8px; width: 18px; height: 18px;">
+                            Include Class Challenge
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer; color: var(--text-color);">
+                            <input type="checkbox" id="include-romance" style="margin-right: 8px; width: 18px; height: 18px;">
+                            Include Romance Challenge
+                        </label>
+                    </div>
+                    <button onclick="generateChallenge('custom')" style="width: 100%; margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: 600; cursor: pointer;">
+                        Generate Custom Challenge
+                    </button>
+                </div>
+            </details>
+        </div>
+
+        <div class="result" id="result">
+            <!-- Results will be inserted here -->
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Dark mode toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            themeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            themeBtn.title = newTheme === 'dark' ? 'Toggle Light Mode' : 'Toggle Dark Mode';
+        }
+        
+        // Load saved theme
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const themeBtn = document.getElementById('theme-toggle-btn');
+                if (themeBtn) {
+                    themeBtn.textContent = '☀️';
+                    themeBtn.title = 'Toggle Light Mode';
+                }
+            }
+        })();
+
+        // BG3 Data
+        const BG3Data = {
+            originCharacters: [
+                "The Dark Urge (Custom Tav, any class)",
+                "Shadowheart (Half-Elf, Cleric)",
+                "Gale (Human, Wizard)",
+                "Wyll (Human, Warlock)",
+                "Lae'zel (Githyanki, Fighter)",
+                "Karlach (Tiefling, Barbarian)",
+                "Astarion (Elf, Rogue)"
+            ],
+            
+            races: [
+                "Human", "Elf (High Elf)", "Elf (Wood Elf)", "Elf (Drow)",
+                "Half-Elf (High Half-Elf)", "Half-Elf (Wood Half-Elf)", "Half-Elf (Drow Half-Elf)",
+                "Dwarf (Gold Dwarf)", "Dwarf (Shield Dwarf)", "Dwarf (Duergar)",
+                "Halfling (Lightfoot Halfling)", "Halfling (Strongheart Halfling)",
+                "Gnome (Rock Gnome)", "Gnome (Forest Gnome)", "Gnome (Deep Gnome)",
+                "Tiefling (Asmodeus Tiefling)", "Tiefling (Mephistopheles Tiefling)", "Tiefling (Zariel Tiefling)",
+                "Half-Orc", "Dragonborn", "Githyanki"
+            ],
+            
+            classes: [
+                "Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk",
+                "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"
+            ],
+            
+            partyComposition: [
+                "Solo run (Tav only, no companions)",
+                "Duo run (Tav + one companion only)",
+                "Trio run (Tav + exactly 2 companions)",
+                "Maximum 2 companions (3-person party total)",
+                "No origin characters (Tav + hired mercenaries only)",
+                "All companions must be respecced to their worst stat class",
+                "Party of all casters (no martial classes)",
+                "Party of all martials (no casters)",
+                "All same class party (respec everyone to one class)",
+                "No duplicate classes allowed in party",
+                "Camp NPCs only (only recruit non-companions: Scratch, Owlbear, Volo, Barcus, etc.)",
+                "Third-party characters only (Jaheira, Minsc, Halsin, Minthara - no Act 1 origin companions)",
+                "Late game party only (can only recruit companions available in Act 2+: Jaheira, Halsin, Minsc, Minthara)",
+                "Elder companions only (Jaheira, Minsc, Halsin - no young companions)",
+                "Recruit Jaheira and Minsc only (the Harper veterans)",
+                "Recruit Halsin and Minthara only (the drow and the druid)",
+                "No origin companions allowed (only Jaheira, Minsc, Halsin, Minthara, hired mercenaries)",
+                "Rotating Roster (recruit everyone, but only ONE companion active per camp visit - must switch every time)",
+                "Musical Chairs Party (recruit all, maximum 2 active companions, must rotate who's active each camp visit)",
+                "Hirelings Only Until Act 3 (only hired mercenaries from Withers in Acts 1-2, companions allowed Act 3+)"
+            ],
+            
+            combatRestrictions: [
+                "No healing potions allowed",
+                "No magic items allowed (unequip all magic gear)",
+                "Only unarmed strikes (fists/natural weapons)",
+                "No bonus actions in combat",
+                "No reactions in combat",
+                "No movement in combat (stay in starting positions)",
+                "Pacifist damage only (healing, buffs, debuffs - no direct damage)",
+                "No using barrels or explosives to solve problems",
+                "No looting any corpses (only containers and vendors)",
+                "Must take damage every round (if you don't, damage yourself)",
+                "No multi-attack (only 1 attack per turn)",
+                "Can only use weapons you're not proficient with",
+                "No long rests except when forced by story",
+                "Must use starting equipment only (no weapon/armor upgrades)",
+                "No using environmental advantages (high ground, etc)",
+                "All fights must be fair (no ambushes, no attacking sleeping enemies)",
+                "No crowd control spells (no Hold Person, Sleep, etc)",
+                "No summons or familiars",
+                "Must always split the party for combat",
+                "Can only attack enemies who have damaged you first",
+                "Random weapon each combat (generate before each fight)",
+                "No consumables in combat (potions, scrolls, arrows counted as equipment)",
+                "Can only damage enemies when they're looking at you",
+                "Throw-only combat (only throw weapons/items, no melee/spells)",
+                "One spell/ability per combat encounter",
+                "All damage must come from cantrips only (no leveled spells for damage)",
+                "Unarmed Gentleman (Tavern Brawler, no weapons/armor, max CHA min STR)",
+                "Naked and Afraid (no equipment, complete Act 1 with 0 items)",
+                "Dumpster Diver (only throw rotten food at enemies)",
+                "Junk Merchant (only items worth 5 gold or less)",
+                "Alphabetical Spellcaster (prepared spells in alphabetical order)",
+                "Explosion Enthusiast (only explosives/bombs/surface effects)",
+                "Bow only (ranged weapons only, no melee)",
+                "Melee only (no ranged weapons or ranged spells)",
+                "Stabby McGee (daggers and shortswords only)",
+                "Bonk only (clubs and maces only)",
+                "Alphabetical Attacks (only use abilities/spells in alphabetical order per combat)"
+            ],
+            
+            difficultyModifiers: [
+                "Permadeath (if Tav dies, restart the entire run)",
+                "Hardcore mode (no save scumming, accept all rolls)",
+                "Honour Mode only",
+                "No resting between fights (only after completing a zone - i.e., finish all Blighted Village quests before resting, no jumping around)",
+                "No vendor shops (can't buy or sell anything)",
+                "Can't multiclass",
+                "Must multiclass at least twice",
+                "Never level up (stay level 1 the entire game)",
+                "Can only level up after killing a boss",
+                "Random ASI/Feat choice (RNG decides)",
+                "Dump Stat Devotee (every ASI into lowest stat)",
+                "Feat Collector (never take ASI, only feats)",
+                "Single Stat Obsession (all ASIs into one stat only)",
+                "Anti-Synergy Feats (only feats that conflict with class)",
+                "Odd Number Curse (only increase to odd numbers)",
+                "Worst Option Only ASI (deliberately pick worst choice)",
+                "No using Withers (no respec, no resurrect, no hirelings)",
+                "Speedrun mode (beat the game as fast as possible)",
+                "100% completion run (all quests, all collectibles)"
+            ],
+            
+            roleplayRestrictions: [
+                "Must always tell the truth (no deception)",
+                "Must always lie when possible",
+                "Always pick the evil dialogue options",
+                "Always pick the good dialogue options",
+                "Never persuade, only intimidate",
+                "Never intimidate, only persuade",
+                "Must betray at least 3 companions",
+                "Must kill all companions before Act 3",
+                "No fast travel",
+                "Must exhaust all dialogue options with every NPC",
+                "Must steal at least one item from every building",
+                "Must get caught stealing at least once per act",
+                "All decisions made by dice roll",
+                "All decisions made by chat/audience vote",
+                "Must play a character with opposite personality to your own",
+                "Must roleplay as a specific famous character",
+                "Never break character, even in combat",
+                "Must narrate all actions in third person out loud",
+                "Compulsive Confessor (confess every crime immediately)",
+                "Friendly Fire Fanatic (actively hit allies with AOE)",
+                "Must choose bad dialogue reactions for Shadowheart (make her disapprove)",
+                "Must choose bad dialogue reactions for Gale (make him disapprove)",
+                "Must choose bad dialogue reactions for Astarion (make him disapprove)",
+                "Must choose bad dialogue reactions for Lae'zel (make her disapprove)",
+                "Must choose bad dialogue reactions for Wyll (make him disapprove)",
+                "Must choose bad dialogue reactions for Karlach (make her disapprove)",
+                "Cannot recruit Shadowheart (never recruit across all 3 acts)",
+                "Cannot recruit Gale (never recruit across all 3 acts)",
+                "Cannot recruit Astarion (never recruit across all 3 acts)",
+                "Cannot recruit Lae'zel (never recruit across all 3 acts)",
+                "Cannot recruit Wyll (never recruit across all 3 acts)",
+                "Cannot recruit Karlach (never recruit across all 3 acts)",
+                "Cannot recruit Halsin (never recruit across all 3 acts)",
+                "Cannot recruit Jaheira (never recruit across all 3 acts)",
+                "Cannot recruit Minsc (never recruit across all 3 acts)",
+                "Cannot recruit Minthara (never recruit across all 3 acts)",
+                "Must side with Raphael (accept his deal)",
+                "Must side with Mizora (accept all her deals)",
+                "Must side with Haarlep (make the deal)",
+                "Must free Orpheus (side with Orpheus ending)",
+                "Must let Emperor consume Orpheus",
+                "Act 1: Side with Minthara (raid the grove, kill tieflings)",
+                "Act 1: Side with Halsin (kill goblin leaders, save the grove)",
+                "Act 1: Recruit BOTH Minthara and Halsin (knock out Minthara, save grove, recruit her later)",
+                "Act 1: Side with druids, complete the ritual, let tieflings die",
+                "Act 1: Side with tieflings, stop the ritual, protect the refugees",
+                "Act 1: Side with Aradin (blame Zevlor, support Aradin's story)",
+                "Act 1: Side with Zevlor (defend him, call out Aradin)",
+                "Recruit Shadowheart, then do Shar Trials without her to make her leave",
+                "Recruit Gale, then refuse to give him ANY magic artifacts until he leaves",
+                "Recruit Astarion, then refuse to let him feed until he leaves",
+                "Recruit Lae'zel, then side against githyanki at every opportunity until she leaves",
+                "Recruit Wyll, then kill Karlach in front of him to make him leave",
+                "Recruit Karlach, then side with paladins/Zariel at every opportunity until she leaves",
+                "Paladin only: Must break oath, kill Oathbreaker Knight, stay Oathbreaker forever",
+                "Paladin only: Must break and restore oath repeatedly (cycle every act)",
+                "Must attack Withers every time you see him (prepare for consequences)",
+                "Iron Throne: Only rescue Duke Ravengard, let everyone else die",
+                "Iron Throne: Only rescue Omeluum, let everyone else die",
+                "Iron Throne: Let EVERYONE die (rescue nobody)",
+                "Evil Wyll run (break pact, make cruel choices, embrace dark urges if available)",
+                "Good Astarion run (reject ascension, protect spawn, choose compassion)",
+                "Soft Minthara run (romance her, choose gentle dialogue, show her redemption)",
+                "Soft Lae'zel run (convince her to question Vlaakith, choose diplomatic options)",
+                "Shadowheart: Shar's Perfect Cleric (never use Selûne dialogue, full Shar devotion, kill parents)",
+                "Shadowheart: Secret Selûnite (reject Shar at every opportunity, save parents, embrace light)",
+                "Gale: The Humble Wizard (refuse crown, never brag about intelligence, self-deprecating only)",
+                "Gale: Godhood Obsessed (pursue crown at all costs, arrogant dialogue, divine ambition)",
+                "Astarion: Spawn Forever (never ascend, protect other spawn, reject power)",
+                "Astarion: Ascension at Any Cost (sacrifice spawn, embrace evil, seek ultimate power)",
+                "Lae'zel: Vlaakith's Loyalist (never question her, follow orders, kill anyone who doubts)",
+                "Lae'zel: Githyanki Rebel (question everything, side with Voss, embrace freedom)",
+                "Wyll: Pact Breaker (break pact ASAP, reject Mizora, accept all consequences)",
+                "Wyll: Mizora's Puppet (obey every command, renew pact, stay bound)",
+                "Karlach: Peaceful Barbarian (never rage, talk through problems, avoid violence when possible)",
+                "Karlach: Glass Tank (8 CON barbarian, never use defensive abilities, reckless attack always)",
+                "Halsin: City Druid (hate nature, prefer urban areas, complain about wilderness)",
+                "Halsin: Monogamous Romantic (reject polyamory, stay loyal to one romance, traditional values)",
+                "Minthara: Redemption Arc (choose good dialogue, protect weak, reject Lolth completely)",
+                "Minthara: Absolute Loyalist (stay evil, reject redemption, embrace the Absolute)",
+                "Jaheira: Reckless Veteran (ignore experience, make impulsive choices, abandon caution)",
+                "Jaheira: Overprotective Mother (protect everyone, never let anyone die, risk everything for party)",
+                "Minsc: The Philosopher (quote literature, avoid combat, discuss ethics with enemies)",
+                "Minsc: Boo Hater (ignore Boo, never listen to hamster, dismiss his advice)",
+                "Happy ending for everyone: Astarion unascended, Gale rejects crown, Shadowheart saves parents, Lae'zel stays on earth, Karlach & Wyll in Avernus together",
+                "Tragic ending for everyone: Astarion ascended, Gale becomes god, Shadowheart kills parents, Lae'zel returns to Vlaakith, Karlach dies/becomes mindflayer, Wyll stays Duke"
+            ],
+            
+            specialChallenges: [
+                "Glass Cannon build only (max damage, minimum defense)",
+                "Tank only build (max defense, minimum damage)",
+                "Pacifist run (complete game with 0 kills by your party)",
+                "No magic run (no spells, only martial abilities)",
+                "Magic only (no weapon attacks)",
+                "The Throwing Problem - Karlach (must Throw something every turn)",
+                "Fashion Disaster - Astarion (gaudiest outfit possible)",
+                "Wizard's Pride - Gale (only spells/cantrips, never weapons)",
+                "Jumping Jack (jump once near every NPC before conversations)",
+                "Explosive Hoarder (collect every barrel, use ONLY explosives to kill)",
+                "Box Fort Tactician (place crates before fights for cover)",
+                "Shove Simulator (only kill by shoving off cliffs)",
+                "Dip Everything (must dip weapon before EVERY attack)",
+                "Jump Scare (only engage combat by jumping on enemies)",
+                "Misty Step Addict (can ONLY move via Misty Step)",
+                "Summon Army (max summons always active)",
+                "Concentration Roulette (concentration spell active at ALL times)",
+                "The Poverty Run (never pick up gold)",
+                "The Blind Playthrough (turn off health bars, damage numbers)",
+                "The Donation Box (drop 50% gold/consumables after every loot)",
+                "Inventory Roulette (randomize equipped items every long rest)",
+                "Necro-Interviewer (Speak with Dead on EVERY corpse)",
+                "Container Inspector (100% container inspection mandatory)",
+                "Potion Chugger (consume potion before EVERY combat)",
+                "Weapon Juggler (switch weapon every turn, no repeats)",
+                "Fire Safety Inspector (hoard water barrels, extinguish flames)",
+                "Chair Enthusiast (carry 10+ chairs, throw as primary weapon)",
+                "Cheese Wheel Champion (carry 20+ cheese wheels as weapons)",
+                "The Libarbarian (Barbarian + Tavern Brawler, only throw books)",
+                "Glass Barbarian (8 CON, Unarmored Defense, Reckless Attack always)",
+                "Disappointing Druid (only Wild Shape into weakest forms)",
+                "Allergic to Rage (Barbarian never uses Rage except bosses)",
+                "The Traveling Band (everyone has Performance, concert every 20 min)",
+                "Fish Slapper (collect every rotten and regular fish, use ONLY fish as weapons)",
+                "Idol Collector (steal/take every idol in game, including Grymforge trapped walkway)",
+                "Selune's Gift to Shadowheart (collect all Selune items, send to Shadowheart, equip her ONLY with Selune gear entire game)",
+                "Shadowheart's Choice (do NOT influence Nightsong battle, let Shadowheart choose her own fate)",
+                "No Reroll Allowed (cannot reroll any check unless game forces you to)",
+                "Shadowheart Origin: Githyanki Army (play as Shadowheart, entire party must be githyanki, MUST recruit and romance Lae'zel - overrides race/romance challenges)",
+                "Lae'zel Origin: Wizard Academy (play as Lae'zel, all companions respec to Wizard, all must be elf/human, MUST romance Shadowheart - overrides race/romance challenges)",
+                "Barrel Baron (collect 50+ barrels, never use them - just hoard)",
+                "Shoe Collector (steal every pair of boots in game, never wear them)",
+                "The Archaeologist (examine and take every Ancient/Broken item despite being useless)",
+                "Candle Crusader (light every candle you find, extinguish none)",
+                "Furniture Destroyer (main attack ALL wooden furniture - bookcases, chests, wardrobes, shelves - if it can be attacked, destroy it)",
+                "Scroll Hoarder (collect ALL scrolls, never let Gale or wizards learn them, never cast them - just hoard)",
+                "Ingredient Hoarder (collect ALL ingredients, never craft anything except quest-required items)",
+                "Potion Prohibition (collect ALL potions, hoard them, only drink basic healing potions - never use or throw other potions except to heal yourself)",
+                "Buff Collector (collect every possible buff from NPCs, potions, statues, quests - stack as many as possible)",
+                "Arrow Mismanagement (collect ALL arrows, only use WRONG arrows - fire arrows on fire immune, dragon slaying on goblins, etc.)",
+                "Water Hoarder (collect all water bottles/jugs/containers, never extinguish fires with them)"
+            ],
+            
+            raceChallenges: [
+                "Must play the most unpopular race",
+                "Must play a race that makes no sense for your class",
+                "Random race (roll for it)",
+                "Play a dwarf and never use ranged weapons",
+                "Play a halfling and dual-wield heavy weapons",
+                "Play Githyanki and be nice to everyone",
+                "Play Drow and never use stealth",
+                "Play Dragonborn and be terrified of fire",
+                "Play Half-Orc and only use finesse weapons",
+                "Gnome supremacist (only recruit gnomes)",
+                "Tall people only (no gnomes, dwarves, halflings)",
+                "Short king/queen run (only small races)",
+                "Elf superiority run (only elves)",
+                "Monster mash (only monstrous races: githyanki, drow, half-orc, dragonborn, duergar)",
+                "No humans allowed"
+            ],
+            
+            classChallenges: [
+                "Barbarian: Never rage",
+                "Bard: Must perform after every combat",
+                "Cleric: Can only heal, never attack",
+                "Druid: Must maintain Wild Shape in all conversations",
+                "Fighter: No using Action Surge",
+                "Monk: No Ki abilities",
+                "Paladin: Must break your oath immediately",
+                "Ranger: Urban ranger (no nature spells in cities)",
+                "Rogue: No Sneak Attack",
+                "Sorcerer: Can only use Wild Magic",
+                "Warlock: Must obey every request from your patron",
+                "Wizard: Can't prepare spells (stuck with starting selection)",
+                "Barbarian with 20 Intelligence (be the smartest barbarian)",
+                "Wizard with 8 Intelligence (dumb wizard)",
+                "Bard who never speaks (mute bard)",
+                "Cleric who worships the wrong god for their domain",
+                "Monk who refuses to meditate",
+                "Paladin who never helps anyone",
+                "Ranger with animal nemesis (attack own companions animals)",
+                "Rogue who announces plans loudly",
+                "Sorcerer afraid of their own magic",
+                "Warlock trying to break their pact",
+                "Fighter who philosophizes mid-combat (skip your turn and read a book/scroll from inventory at least 3x per combat)",
+                "Druid who hates nature (never cast nature spells, take Magic Initiate feat for combat cantrip like Warlock's Eldritch Blast, spam that instead)",
+                "All Monks party (4 monks)",
+                "Four Halfling Barbarians (throw each other)",
+                "The Band (respec all to Bards)",
+                "Four Bears run (all Druids in Wild Shape)",
+                "Jack of All Trades (1 level in all 12 classes)"
+            ],
+            
+            romanceChallenges: [
+                "Must romance Shadowheart",
+                "Must romance Gale",
+                "Must romance Astarion",
+                "Must romance Lae'zel",
+                "Must romance Wyll",
+                "Must romance Karlach",
+                "Must romance Halsin",
+                "Must romance Minthara",
+                "Must romance Shadowheart, then break up to romance someone else",
+                "Must romance Gale, then break up to romance someone else",
+                "Must romance Astarion, then break up to romance someone else",
+                "Must romance Lae'zel, then break up to romance someone else",
+                "Must romance Wyll, then break up to romance someone else",
+                "Must romance Karlach, then break up to romance someone else",
+                "Must romance Halsin, then break up to romance someone else",
+                "Must romance Minthara, then break up to romance someone else",
+                "Romance as many companions as possible in one playthrough",
+                "Romance yourself (if origin character: examine every mirror, stay single - you're in love with yourself)",
+                "Cannot romance anyone (forever alone run)",
+                "Must romance every companion possible",
+                "Must bed Halsin in bear form (choose the bear option)",
+                "Must bed the Emperor (accept the astral tadpole intimacy)",
+                "Must bed Haarlep (make the deal with the incubus)",
+                "Must bed the drow twins at Sharess's Caress and invite your romance to join",
+                "Must bed Mizora (accept her offer in Act 3)",
+                "Must romance Wyll, then bed Mizora (betray Wyll with his patron)",
+                "Bed every single NPC/companion possible (Mizora, Emperor, Haarlep, drow twins, bear Halsin, all companions)",
+                "Ultimate Debauchery: Bed Emperor, Haarlep, drow twins, threesome with Halsin, AND invite your romance to at least one encounter"
+            ]
+        };
+
+        let currentChallenge = null;
+
+        function randomChoice(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function randomSample(arr, n) {
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, Math.min(n, arr.length));
+        }
+
+        function generateChallenge(difficulty) {
+            const challenge = {
+                character: null,
+                playerClass: null,
+                race: null,
+                partyComposition: [],
+                combatRestrictions: [],
+                difficultyModifiers: [],
+                roleplayRestrictions: [],
+                specialChallenges: [],
+                raceChallenge: null,
+                classChallenge: null,
+                romanceChallenge: null,
+                difficultyLevel: difficulty
+            };
+
+            // Generate character
+            const useOrigin = Math.random() < 0.3;
+            if (useOrigin) {
+                challenge.character = randomChoice(BG3Data.originCharacters);
+                challenge.playerClass = "Origin Character - Use Default Class";
+                challenge.race = "Origin Character - Use Default Race";
+            } else {
+                challenge.character = "Custom Tav";
+                challenge.playerClass = randomChoice(BG3Data.classes);
+                challenge.race = randomChoice(BG3Data.races);
+            }
+
+            // Generate modifiers based on difficulty
+            if (difficulty === 'custom') {
+                // Get custom values from inputs
+                const partyCount = parseInt(document.getElementById('party-mods').value) || 0;
+                const combatCount = parseInt(document.getElementById('combat-mods').value) || 0;
+                const difficultyCount = parseInt(document.getElementById('difficulty-mods').value) || 0;
+                const roleplayCount = parseInt(document.getElementById('roleplay-mods').value) || 0;
+                const specialCount = parseInt(document.getElementById('special-mods').value) || 0;
+                const includeRace = document.getElementById('include-race').checked;
+                const includeClass = document.getElementById('include-class').checked;
+                const includeRomance = document.getElementById('include-romance').checked;
+
+                challenge.partyComposition = randomSample(BG3Data.partyComposition, partyCount);
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, combatCount);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, difficultyCount);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, roleplayCount);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, specialCount);
+                if (includeRace) challenge.raceChallenge = randomChoice(BG3Data.raceChallenges);
+                if (includeClass) challenge.classChallenge = randomChoice(BG3Data.classChallenges);
+                if (includeRomance) challenge.romanceChallenge = randomChoice(BG3Data.romanceChallenges);
+            } else if (difficulty === 'light') {
+                challenge.partyComposition = randomSample(BG3Data.partyComposition, 1);
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, 2);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, 1);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, 1);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, 1);
+            } else if (difficulty === 'medium') {
+                challenge.partyComposition = randomSample(BG3Data.partyComposition, 2);
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, 3);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, 2);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, 2);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, 2);
+                if (Math.random() < 0.3) challenge.raceChallenge = randomChoice(BG3Data.raceChallenges);
+                if (Math.random() < 0.3) challenge.classChallenge = randomChoice(BG3Data.classChallenges);
+            } else if (difficulty === 'extreme') {
+                challenge.partyComposition = randomSample(BG3Data.partyComposition, 3);
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, 5);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, 3);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, 3);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, 3);
+                if (Math.random() < 0.5) challenge.raceChallenge = randomChoice(BG3Data.raceChallenges);
+                if (Math.random() < 0.5) challenge.classChallenge = randomChoice(BG3Data.classChallenges);
+                if (Math.random() < 0.5) challenge.romanceChallenge = randomChoice(BG3Data.romanceChallenges);
+            } else if (difficulty === 'tav-plus-1') {
+                // Tav + 1 companion: Pick exactly 1 companion
+                const allCompanions = ['Shadowheart', 'Gale', 'Astarion', 'Lae\'zel', 'Wyll', 'Karlach', 'Halsin', 'Minthara', 'Jaheira', 'Minsc'];
+                const chosenCompanion = randomChoice(allCompanions);
+                challenge.partyComposition = [`Must recruit ${chosenCompanion}`, `Cannot recruit anyone except ${chosenCompanion}`];
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, 2);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, 1);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, 1);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, 1);
+                if (Math.random() < 0.3) challenge.romanceChallenge = randomChoice(BG3Data.romanceChallenges);
+            } else if (difficulty === 'tav-plus-2') {
+                // Tav + 2 companions: Pick exactly 2 companions
+                const allCompanions = ['Shadowheart', 'Gale', 'Astarion', 'Lae\'zel', 'Wyll', 'Karlach', 'Halsin', 'Minthara', 'Jaheira', 'Minsc'];
+                const chosenCompanions = randomSample(allCompanions, 2);
+                challenge.partyComposition = [`Must recruit ${chosenCompanions[0]}`, `Must recruit ${chosenCompanions[1]}`, `Cannot recruit anyone except ${chosenCompanions[0]} and ${chosenCompanions[1]}`];
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, 2);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, 1);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, 2);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, 1);
+                if (Math.random() < 0.4) challenge.romanceChallenge = randomChoice(BG3Data.romanceChallenges);
+            } else if (difficulty === 'tav-plus-3') {
+                // Tav + 3 companions: Pick exactly 3 companions (full party)
+                const allCompanions = ['Shadowheart', 'Gale', 'Astarion', 'Lae\'zel', 'Wyll', 'Karlach', 'Halsin', 'Minthara', 'Jaheira', 'Minsc'];
+                const chosenCompanions = randomSample(allCompanions, 3);
+                challenge.partyComposition = [`Must recruit ${chosenCompanions[0]}`, `Must recruit ${chosenCompanions[1]}`, `Must recruit ${chosenCompanions[2]}`, `Cannot recruit anyone except ${chosenCompanions[0]}, ${chosenCompanions[1]}, and ${chosenCompanions[2]}`];
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, 3);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, 2);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, 2);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, 2);
+                if (Math.random() < 0.5) challenge.raceChallenge = randomChoice(BG3Data.raceChallenges);
+                if (Math.random() < 0.5) challenge.classChallenge = randomChoice(BG3Data.classChallenges);
+                if (Math.random() < 0.5) challenge.romanceChallenge = randomChoice(BG3Data.romanceChallenges);
+            } else {
+                // Random everything
+                challenge.partyComposition = randomSample(BG3Data.partyComposition, Math.floor(Math.random() * 5) + 1);
+                challenge.combatRestrictions = randomSample(BG3Data.combatRestrictions, Math.floor(Math.random() * 8) + 2);
+                challenge.difficultyModifiers = randomSample(BG3Data.difficultyModifiers, Math.floor(Math.random() * 5) + 1);
+                challenge.roleplayRestrictions = randomSample(BG3Data.roleplayRestrictions, Math.floor(Math.random() * 5) + 1);
+                challenge.specialChallenges = randomSample(BG3Data.specialChallenges, Math.floor(Math.random() * 5) + 1);
+                if (Math.random() < 0.6) challenge.raceChallenge = randomChoice(BG3Data.raceChallenges);
+                if (Math.random() < 0.6) challenge.classChallenge = randomChoice(BG3Data.classChallenges);
+                if (Math.random() < 0.6) challenge.romanceChallenge = randomChoice(BG3Data.romanceChallenges);
+            }
+
+            currentChallenge = challenge;
+            displayChallenge(challenge);
+        }
+
+        function displayChallenge(challenge) {
+            let html = '<div class="character-info">';
+            html += '<h3>Your Character</h3>';
+            html += `<p><strong>Character:</strong> ${challenge.character}</p>`;
+            html += `<p><strong>Class:</strong> ${challenge.playerClass}</p>`;
+            html += `<p><strong>Race:</strong> ${challenge.race}</p>`;
+            html += '</div>';
+
+            // Detect conflicts and add warnings
+            const warnings = detectConflicts(challenge);
+            const clarifications = getClarifications(challenge);
+            
+            if (warnings.length > 0 || clarifications.length > 0) {
+                html += '<div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin-bottom: 20px;">';
+                html += '<h3 style="color: #856404; margin-bottom: 15px;">⚠️ Important Rules & Clarifications</h3>';
+                
+                if (warnings.length > 0) {
+                    html += '<div style="margin-bottom: 15px;"><strong style="color: #d32f2f;">🚫 Conflicts Detected:</strong></div>';
+                    html += '<div style="background: #f8d7da; border: 2px solid #dc3545; border-radius: 5px; padding: 15px; margin-bottom: 15px;">';
+                    html += '<p style="color: #721c24; margin: 0 0 10px 0; font-weight: 600;">⚠️ You have conflicting modifiers! It is recommended to reroll one of the conflicting options using the "🎲 Reroll One" button below.</p>';
+                    html += '</div>';
+                    html += '<ul style="margin: 0; padding-left: 25px;">';
+                    warnings.forEach(warning => {
+                        html += `<li style="color: #856404; margin: 8px 0;">${warning}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                if (clarifications.length > 0) {
+                    if (warnings.length > 0) html += '<hr style="margin: 15px 0; border: 1px solid #ffc107;">';
+                    html += '<div style="margin-bottom: 10px;"><strong style="color: #856404;">📋 Rule Clarifications:</strong></div>';
+                    html += '<ul style="margin: 0; padding-left: 25px;">';
+                    clarifications.forEach(clarification => {
+                        html += `<li style="color: #856404; margin: 8px 0;">${clarification}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+            }
+
+            const categories = [
+                { title: '👥 Party Composition', items: challenge.partyComposition },
+                { title: '⚔️ Combat Restrictions', items: challenge.combatRestrictions },
+                { title: '🔥 Difficulty Modifiers', items: challenge.difficultyModifiers },
+                { title: '🎭 Roleplay Restrictions', items: challenge.roleplayRestrictions },
+                { title: '⭐ Special Challenges', items: challenge.specialChallenges }
+            ];
+
+            for (const cat of categories) {
+                if (cat.items && cat.items.length > 0) {
+                    html += '<div class="result-section">';
+                    html += `<h3>${cat.title}</h3>`;
+                    html += '<ul>';
+                    for (const item of cat.items) {
+                        html += `<li>${item}</li>`;
+                    }
+                    html += '</ul>';
+                    html += '</div>';
+                }
+            }
+
+            if (challenge.raceChallenge) {
+                html += '<div class="result-section">';
+                html += '<h3>🧝 Race Challenge</h3>';
+                html += `<p>${challenge.raceChallenge}</p>`;
+                html += '</div>';
+            }
+
+            if (challenge.classChallenge) {
+                html += '<div class="result-section">';
+                html += '<h3>🎯 Class Challenge</h3>';
+                html += `<p>${challenge.classChallenge}</p>`;
+                html += '</div>';
+            }
+
+            if (challenge.romanceChallenge) {
+                html += '<div class="result-section">';
+                html += '<h3>💕 Romance Challenge</h3>';
+                html += `<p>${challenge.romanceChallenge}</p>`;
+                html += '</div>';
+            }
+
+            // Add summary box
+            html += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin: 25px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">';
+            html += '<h3 style="color: white; margin-bottom: 15px; font-size: 1.3em;">📋 Challenge Summary</h3>';
+            html += '<div style="background: rgba(255,255,255,0.15); padding: 20px; border-radius: 8px; line-height: 1.8;">';
+            
+            let summary = '';
+            
+            // Start with character
+            if (challenge.character === 'Custom Tav') {
+                summary += `You are playing as a <strong>Custom Tav</strong>`;
+            } else {
+                summary += `You are playing as <strong>${challenge.character}</strong>`;
+            }
+            
+            // Add race
+            if (challenge.raceChallenge) {
+                summary += ` with the following race requirement: <strong>${challenge.raceChallenge}</strong>`;
+            } else if (challenge.race && !challenge.race.includes('Origin')) {
+                summary += `, a <strong>${challenge.race}</strong>`;
+            }
+            
+            // Add class
+            if (challenge.classChallenge) {
+                summary += `. Your class challenge is: <strong>${challenge.classChallenge}</strong>`;
+            } else if (challenge.playerClass && !challenge.playerClass.includes('Origin')) {
+                summary += ` <strong>${challenge.playerClass}</strong>`;
+            }
+            
+            summary += '. ';
+            
+            // Party composition
+            if (challenge.partyComposition && challenge.partyComposition.length > 0) {
+                if (challenge.partyComposition.some(p => p.toLowerCase().includes('solo'))) {
+                    summary += `You must complete the game <strong>solo with no companions</strong>. `;
+                } else if (challenge.partyComposition.some(p => p.toLowerCase().includes('camp npcs only'))) {
+                    summary += `Your party can only consist of <strong>Camp NPCs</strong> like Scratch, Owlbear, and Volo—no origin companions are allowed. `;
+                } else {
+                    summary += `For your party composition, you must follow these rules: ${challenge.partyComposition.map(p => `<strong>${p}</strong>`).join(', and ')}. `;
+                }
+            }
+            
+            // Combat restrictions
+            if (challenge.combatRestrictions && challenge.combatRestrictions.length > 0) {
+                summary += `During combat, you are restricted by the following: ${challenge.combatRestrictions.map(c => `<strong>${c}</strong>`).join(', ')}. `;
+            }
+            
+            // Difficulty modifiers
+            if (challenge.difficultyModifiers && challenge.difficultyModifiers.length > 0) {
+                summary += `Additional difficulty rules include: ${challenge.difficultyModifiers.map(d => `<strong>${d}</strong>`).join(', ')}. `;
+            }
+            
+            // Roleplay restrictions
+            if (challenge.roleplayRestrictions && challenge.roleplayRestrictions.length > 0) {
+                summary += `You must roleplay according to these restrictions: ${challenge.roleplayRestrictions.map(r => `<strong>${r}</strong>`).join(', ')}. `;
+            }
+            
+            // Special challenges
+            if (challenge.specialChallenges && challenge.specialChallenges.length > 0) {
+                summary += `Your special challenges are: ${challenge.specialChallenges.map(s => `<strong>${s}</strong>`).join(', ')}. `;
+            }
+            
+            // Romance challenge
+            if (challenge.romanceChallenge) {
+                summary += `Finally, your romance requirement is: <strong>${challenge.romanceChallenge}</strong>.`;
+            }
+            
+            html += `<p style="margin: 0; font-size: 1.05em;">${summary}</p>`;
+            html += '</div>';
+            html += '<p style="margin-top: 15px; font-size: 0.95em; opacity: 0.9;">💡 <strong>Tip:</strong> Read the detailed sections above for complete rules, clarifications, and conflict warnings!</p>';
+            html += '</div>';
+
+            html += '<div class="actions">';
+            html += '<button class="btn-copy" onclick="copyChallenge()">📋 Copy</button>';
+            html += '<button class="btn-save" onclick="saveChallenge()">💾 Save</button>';
+            html += '<button onclick="showShareCode()" style="background: #17a2b8; color: white; padding: 15px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📤 Share</button>';
+            html += '<button onclick="showRerollMenu()" style="background: #ffc107; color: #333; padding: 15px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">🎲 Reroll One</button>';
+            html += '<button class="btn-new" onclick="location.reload()">🔄 New Challenge</button>';
+            html += '</div>';
+
+            document.getElementById('result').innerHTML = html;
+            document.getElementById('result').classList.add('show');
+        }
+
+        function detectConflicts(challenge) {
+            const warnings = [];
+            const allModifiers = [
+                ...(challenge.partyComposition || []),
+                ...(challenge.combatRestrictions || []),
+                ...(challenge.specialChallenges || []),
+                ...(challenge.roleplayRestrictions || [])
+            ].map(m => m.toLowerCase());
+            
+            // Race Challenge overrides character race
+            if (challenge.raceChallenge && challenge.race && !challenge.race.includes('Origin')) {
+                warnings.push('<strong>Race Challenge Override:</strong> Your Race Challenge OVERRIDES your randomly generated race. Play the race specified in the Race Challenge, NOT the one shown in "Your Character" section.');
+            }
+            
+            // Class Challenge overrides character class (only for specific class assignments)
+            if (challenge.classChallenge && challenge.playerClass && !challenge.playerClass.includes('Origin')) {
+                const hasSpecificClass = challenge.classChallenge.toLowerCase().includes('barbarian') || 
+                                        challenge.classChallenge.toLowerCase().includes('bard') ||
+                                        challenge.classChallenge.toLowerCase().includes('cleric') ||
+                                        challenge.classChallenge.toLowerCase().includes('druid') ||
+                                        challenge.classChallenge.toLowerCase().includes('fighter') ||
+                                        challenge.classChallenge.toLowerCase().includes('monk') ||
+                                        challenge.classChallenge.toLowerCase().includes('paladin') ||
+                                        challenge.classChallenge.toLowerCase().includes('ranger') ||
+                                        challenge.classChallenge.toLowerCase().includes('rogue') ||
+                                        challenge.classChallenge.toLowerCase().includes('sorcerer') ||
+                                        challenge.classChallenge.toLowerCase().includes('warlock') ||
+                                        challenge.classChallenge.toLowerCase().includes('wizard');
+                
+                if (hasSpecificClass) {
+                    warnings.push('<strong>Class Challenge Override:</strong> Your Class Challenge specifies a particular class. This OVERRIDES your randomly generated class. Play the class specified in the Class Challenge section.');
+                }
+            }
+            
+            // Roleplay overrides Romance
+            const hasNoRomanceRP = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.toLowerCase().includes('cannot romance') || r.toLowerCase().includes('forever alone'));
+            const hasNoRomanceChallenge = challenge.romanceChallenge && 
+                (challenge.romanceChallenge.toLowerCase().includes('cannot romance') || challenge.romanceChallenge.toLowerCase().includes('forever alone'));
+            const hasPositiveRomanceChallenge = challenge.romanceChallenge && 
+                !hasNoRomanceChallenge &&
+                !challenge.romanceChallenge.toLowerCase().includes('yourself');
+            
+            if (hasNoRomanceRP && hasPositiveRomanceChallenge) {
+                warnings.push('<strong>Roleplay Overrides Romance:</strong> Your roleplay restriction says "Cannot romance anyone" - this OVERRIDES and cancels the romance challenge. Follow roleplay rules instead.');
+            }
+            
+            // Origin character + romance yourself
+            const isOriginCharacter = challenge.character && challenge.character.includes('(');
+            const hasRomanceYourself = challenge.romanceChallenge && challenge.romanceChallenge.toLowerCase().includes('yourself');
+            
+            if (isOriginCharacter && hasRomanceYourself) {
+                warnings.push('<strong>Origin Character + Romance Yourself:</strong> Perfect! You are playing an origin character and must romance yourself (narcissist run). This means: Look in EVERY mirror you find, look in camp mirror after EVERY rest, and NEVER change your appearance. You are in love with yourself exactly as you are. Stay single - no other romances allowed.');
+            }
+            
+            // Origin character + race challenge conflict
+            if (challenge.character && challenge.character.includes('(') && challenge.raceChallenge) {
+                warnings.push('<strong>Origin Character + Race Challenge:</strong> You need the "Faces of Faerun" mod (or similar) to change an origin character\'s race. Without it, ignore the race challenge.');
+            }
+            
+            // Weapon conflicts
+            const hasNoWeapons = allModifiers.some(m => m.includes('no magic items') || m.includes('only unarmed'));
+            const hasSpecificWeapon = allModifiers.some(m => 
+                m.includes('daggers') || m.includes('shortswords') || m.includes('bow only') || 
+                m.includes('melee only') || m.includes('clubs') || m.includes('maces')
+            );
+            if (hasNoWeapons && hasSpecificWeapon) {
+                warnings.push('<strong>Weapon Conflict:</strong> Specific weapon challenges override "no weapons" rules. Your COMPANIONS may only use the specified weapons, even if not proficient (they fight at disadvantage).');
+            }
+            
+            // Romance + Party conflicts
+            const hasNPCOnly = allModifiers.some(m => m.includes('camp npcs only'));
+            const hasCompanionRomance = challenge.romanceChallenge && 
+                (challenge.romanceChallenge.includes('Shadowheart') || 
+                 challenge.romanceChallenge.includes('Gale') ||
+                 challenge.romanceChallenge.includes('Astarion') ||
+                 challenge.romanceChallenge.includes('Lae\'zel') ||
+                 challenge.romanceChallenge.includes('Wyll') ||
+                 challenge.romanceChallenge.includes('Karlach') ||
+                 challenge.romanceChallenge.includes('Halsin') ||
+                 challenge.romanceChallenge.includes('Minthara'));
+            
+            if (hasNPCOnly && hasCompanionRomance) {
+                warnings.push('<strong>IMPOSSIBLE COMBO:</strong> "Camp NPCs only" means NO companions can join permanently. Romance challenge cannot be completed. Ignore romance challenge OR ignore NPC-only rule.');
+            }
+            
+            if (hasNPCOnly) {
+                warnings.push('<strong>Camp NPCs Only:</strong> ALL other party composition and romance modifiers are IGNORED. You can gather allies (Halsin at camp until Act 2 ends, but he cannot join permanently). Only Scratch, Owlbear, Volo, etc. as active party members.');
+            }
+            
+            // Truth vs Lie conflict
+            const hasTruth = allModifiers.some(m => m.includes('always tell the truth'));
+            const hasLie = allModifiers.some(m => m.includes('always lie'));
+            if (hasTruth && hasLie) {
+                warnings.push('<strong>Truth vs Lie:</strong> You cannot both always lie and always tell truth. Pick one and ignore the other.');
+            }
+            
+            // Solo + Party composition
+            const hasSolo = allModifiers.some(m => m.includes('solo run'));
+            const hasPartyRequirement = challenge.partyComposition && challenge.partyComposition.length > 1;
+            if (hasSolo && hasPartyRequirement) {
+                warnings.push('<strong>Solo + Party Combo:</strong> Solo run means ONLY you, no companions. Ignore all other party composition modifiers.');
+            }
+            
+            // Romance vs Forced Departure conflict
+            if (challenge.romanceChallenge && challenge.roleplayRestrictions) {
+                const romancedCompanion = challenge.romanceChallenge.match(/Must romance (Shadowheart|Gale|Astarion|Lae'zel|Wyll|Karlach)/);
+                if (romancedCompanion) {
+                    const companionName = romancedCompanion[1];
+                    const hasForcedDeparture = challenge.roleplayRestrictions.some(r => 
+                        r.includes(`Recruit ${companionName}`) && (r.includes('make her leave') || r.includes('make him leave') || r.includes('until she leaves') || r.includes('until he leaves'))
+                    );
+                    
+                    if (hasForcedDeparture) {
+                        warnings.push(`<strong>Romance vs Forced Departure:</strong> You must romance ${companionName} AND force them to leave. Solution: Romance them immediately, then break up ASAP. After breaking up, do whatever makes them leave (betray them, side against them, etc.). Complete both requirements in sequence.`);
+                    }
+                }
+            }
+            
+            // Origin-specific challenge overrides
+            if (challenge.specialChallenges) {
+                const hasShadowheartOrigin = challenge.specialChallenges.some(c => c.includes('Shadowheart Origin: Githyanki Army'));
+                const hasLaezelOrigin = challenge.specialChallenges.some(c => c.includes('Lae\'zel Origin: Wizard Academy'));
+                
+                if (hasShadowheartOrigin) {
+                    warnings.push('<strong>SHADOWHEART ORIGIN OVERRIDE:</strong> This special challenge OVERRIDES your character selection, race challenge, party composition, AND romance challenge. You MUST play as origin Shadowheart with all-githyanki party and romance Lae\'zel. Ignore conflicting modifiers.');
+                }
+                
+                if (hasLaezelOrigin) {
+                    warnings.push('<strong>LAE\'ZEL ORIGIN OVERRIDE:</strong> This special challenge OVERRIDES your character selection, race challenge, class challenge, party composition, AND romance challenge. You MUST play as origin Lae\'zel with all-wizard elf/human party and romance Shadowheart. Ignore conflicting modifiers.');
+                }
+            }
+            
+            // Companion-specific modifier vs recruitment conflicts
+            if (challenge.roleplayRestrictions && challenge.partyComposition) {
+                const companionNames = ['Shadowheart', 'Gale', 'Astarion', 'Lae\'zel', 'Wyll', 'Karlach', 'Halsin', 'Minthara', 'Jaheira', 'Minsc'];
+                const restrictedRecruitment = [];
+                
+                // Check for recruitment restrictions
+                const cannotRecruitAny = challenge.partyComposition.some(p => 
+                    p.includes('Camp NPCs only') || 
+                    p.includes('Third-party characters only') ||
+                    p.includes('Late game party only') ||
+                    p.includes('No origin companions allowed')
+                );
+                
+                // Check for specific companion bans in party composition
+                challenge.partyComposition.forEach(p => {
+                    const match = p.match(/Cannot recruit anyone except ([^,]+)/);
+                    if (match) {
+                        const allowedList = match[1];
+                        companionNames.forEach(name => {
+                            if (!allowedList.includes(name)) {
+                                restrictedRecruitment.push(name);
+                            }
+                        });
+                    }
+                    
+                    // Check for "only recruit X" patterns
+                    const onlyMatch = p.match(/only recruit ([^,]+)/i);
+                    if (onlyMatch && !p.includes('except')) {
+                        const onlyAllowed = onlyMatch[1];
+                        companionNames.forEach(name => {
+                            if (!onlyAllowed.includes(name) && !p.includes(name)) {
+                                restrictedRecruitment.push(name);
+                            }
+                        });
+                    }
+                });
+                
+                // Check for "Cannot recruit X" in roleplay
+                challenge.roleplayRestrictions.forEach(r => {
+                    const match = r.match(/Cannot recruit (Shadowheart|Gale|Astarion|Lae'zel|Wyll|Karlach|Halsin|Jaheira|Minsc|Minthara)/);
+                    if (match) {
+                        restrictedRecruitment.push(match[1]);
+                    }
+                });
+                
+                // Now check if there are companion-specific modifiers for restricted companions
+                const conflicts = [];
+                companionNames.forEach(name => {
+                    if (restrictedRecruitment.includes(name) || cannotRecruitAny) {
+                        const hasSpecificModifier = challenge.roleplayRestrictions.some(r => 
+                            r.includes(`${name}:`) || 
+                            r.includes(`${name.toLowerCase()} run`) ||
+                            r.includes(`Soft ${name}`) ||
+                            (name === 'Lae\'zel' && (r.includes('Lae\'zel\'s') || r.includes('githyanki at every')))
+                        );
+                        
+                        if (hasSpecificModifier) {
+                            conflicts.push(name);
+                        }
+                    }
+                });
+                
+                if (conflicts.length > 0) {
+                    warnings.push(`<strong>Companion-Specific Modifier Conflict:</strong> You have roleplay modifiers specific to <strong>${conflicts.join(', ')}</strong>, but your party composition prevents recruiting them. Solution: Either recruit these companions anyway (ignore party restriction), OR reroll the companion-specific modifier. You cannot complete a companion-specific challenge without that companion!`);
+                }
+            }
+            
+            return warnings;
+        }
+
+        function getClarifications(challenge) {
+            const clarifications = [];
+            const allModifiers = [
+                ...(challenge.partyComposition || []),
+                ...(challenge.combatRestrictions || []),
+                ...(challenge.specialChallenges || []),
+                ...(challenge.roleplayRestrictions || [])
+            ].map(m => m.toLowerCase());
+            
+            // Rule hierarchy clarification
+            if (challenge.roleplayRestrictions && challenge.roleplayRestrictions.length > 0) {
+                clarifications.push('<strong>Rule Hierarchy:</strong> Roleplay Restrictions ALWAYS override Romance Challenges. If roleplay says "no romance" but you got a romance challenge, follow roleplay instead.');
+            }
+            
+            // Weapon proficiency clarification
+            const hasSpecificWeapon = allModifiers.some(m => 
+                m.includes('daggers') || m.includes('shortswords') || m.includes('bow') || 
+                m.includes('clubs') || m.includes('maces') || m.includes('not proficient')
+            );
+            if (hasSpecificWeapon) {
+                clarifications.push('<strong>Weapon/Armor Rules:</strong> If required to use weapons/armor you\'re not proficient with, you fight at DISADVANTAGE. This applies to you AND companions. <strong>Do NOT respec companions</strong> unless explicitly allowed.');
+            }
+            
+            // Romance yourself clarification
+            if (challenge.romanceChallenge && challenge.romanceChallenge.toLowerCase().includes('yourself')) {
+                const isOrigin = challenge.character && challenge.character.includes('(');
+                if (isOrigin) {
+                    clarifications.push('<strong>Romance Yourself (Narcissist Run - Origin Character):</strong> You are in love with yourself! You must look in EVERY mirror you find in the world. You must also look in camp mirror after EVERY short/long rest. You may NEVER change your appearance at the Magic Mirror. Stay single - no romancing other companions. You are perfection and need no one else.');
+                } else {
+                    clarifications.push('<strong>Romance Yourself (Narcissist Run - Custom Tav):</strong> You are in love with yourself! You must look in EVERY mirror you find in the world. You must also look in camp mirror after EVERY short/long rest. You may NEVER change your appearance at the Magic Mirror. Stay single - no romancing other companions. You are perfection exactly as you created yourself.');
+                }
+            }
+            
+            // Spicy romance clarifications
+            if (challenge.romanceChallenge) {
+                if (challenge.romanceChallenge.includes('bear form')) {
+                    clarifications.push('<strong>Bear Romance:</strong> When romancing Halsin, you must choose the BEAR FORM option during the romance scene. This is the iconic "choose the bear" moment.');
+                }
+                
+                if (challenge.romanceChallenge.includes('Emperor')) {
+                    clarifications.push('<strong>Emperor Romance:</strong> You must accept the Emperor\'s astral tadpole intimacy offer. This happens in Act 3 after using the astral tadpole. Choose intimate dialogue options.');
+                }
+                
+                if (challenge.romanceChallenge.includes('Haarlep')) {
+                    clarifications.push('<strong>Haarlep Encounter:</strong> In House of Hope, when meeting Haarlep (the incubus), you must make the deal and bed them. This gives Haarlep your form permanently.');
+                }
+                
+                if (challenge.romanceChallenge.includes('drow twins')) {
+                    clarifications.push('<strong>Drow Twins:</strong> At Sharess\'s Caress (Act 3 brothel), pay for the drow twins encounter. If your challenge requires inviting your romance, bring your romanced companion along for a foursome.');
+                }
+                
+                if (challenge.romanceChallenge.includes('Mizora')) {
+                    if (challenge.romanceChallenge.includes('romance Wyll')) {
+                        clarifications.push('<strong>Wyll + Mizora Betrayal:</strong> First romance Wyll (full romance, not just flirting). Then in Act 3, when Mizora offers to sleep with you, ACCEPT. This is a massive betrayal of Wyll and will have consequences. Wyll will be devastated.');
+                    } else {
+                        clarifications.push('<strong>Mizora Encounter:</strong> In Act 3, Mizora will offer to sleep with you after certain story events. Accept her offer. Warning: This may upset Wyll if he\'s in your party or romanced.');
+                    }
+                }
+                
+                if (challenge.romanceChallenge.includes('Bed every single')) {
+                    clarifications.push('<strong>Sleep With Everyone Challenge:</strong> You must bed ALL available NPCs/companions: All 8 origin companions (Shadowheart, Gale, Astarion, Lae\'zel, Wyll, Karlach, Halsin, Minthara), Mizora, Emperor, Haarlep, drow twins, and bear form Halsin. This requires careful save management and multiple playthroughs or reloads. Good luck!');
+                }
+                
+                if (challenge.romanceChallenge.includes('Ultimate Debauchery')) {
+                    clarifications.push('<strong>Ultimate Debauchery Requirements:</strong> You must (1) Bed Emperor (astral tadpole intimacy), (2) Bed Haarlep (House of Hope deal), (3) Bed drow twins at brothel, (4) Have threesome with Halsin, (5) Invite your romance to at least ONE of these encounters. This is the most... adventurous... romance challenge.');
+                }
+            }
+            
+            // Romance + Party requirement
+            if (challenge.romanceChallenge && challenge.partyComposition && challenge.partyComposition.length > 0) {
+                const companionRomance = challenge.romanceChallenge.match(/Must romance (Shadowheart|Gale|Astarion|Lae'zel|Wyll|Karlach|Halsin|Minthara)/);
+                if (companionRomance) {
+                    clarifications.push(`<strong>Romance + Party:</strong> ${companionRomance[1]} MUST be part of your party composition. Adjust party accordingly.`);
+                }
+            }
+            
+            // Respec rules
+            const hasRespec = allModifiers.some(m => m.includes('respec'));
+            if (!hasRespec && challenge.partyComposition && challenge.partyComposition.length > 0) {
+                clarifications.push('<strong>Companion Respec:</strong> You may NOT respec companions unless a modifier explicitly allows it (e.g., "worst stat class" or "all same class").');
+            }
+            
+            // Respec race warning for origin characters
+            const hasRespecRequirement = allModifiers.some(m => 
+                m.includes('respec') || 
+                m.includes('all same class') || 
+                m.includes('worst stat') || 
+                m.includes('all companions must be') ||
+                m.includes('party of all')
+            );
+            
+            if (hasRespecRequirement) {
+                clarifications.push('<strong>⚠️ Respeccing Origin Character RACE Requires Mod:</strong> Withers can change companion CLASS at any time. However, to change an origin companion\'s RACE (e.g., making Shadowheart a githyanki), you NEED the "Faces of Faerun" mod or similar race-changing mod. Without mods, you can only change their class, not their race. Custom Tav and hirelings can be any race without mods.');
+            }
+            
+            // NPCs clarification
+            const hasNPCOnly = allModifiers.some(m => m.includes('camp npcs only') || m.includes('camp npc'));
+            if (hasNPCOnly) {
+                clarifications.push('<strong>NPCs Definition:</strong> Camp NPCs = Scratch, Owlbear Cub, Volo, Barcus, Dame Aylin, Isobel, etc. You CAN have Halsin as a camp follower until Act 2 ends, but he CANNOT join as permanent companion. No origin companions allowed.');
+            }
+            
+            // Third-party characters clarifications
+            const hasThirdPartyOnly = challenge.partyComposition && challenge.partyComposition.some(p => 
+                p.includes('Third-party characters only') || 
+                p.includes('Late game party only') ||
+                p.includes('Elder companions only') ||
+                p.includes('Jaheira and Minsc only') ||
+                p.includes('Halsin and Minthara only') ||
+                p.includes('No origin companions allowed')
+            );
+            
+            if (hasThirdPartyOnly) {
+                clarifications.push('<strong>Third-Party Characters Definition:</strong> Third-party/non-origin companions are: <strong>Jaheira</strong> (Act 2), <strong>Halsin</strong> (Act 2), <strong>Minsc</strong> (Act 3), and <strong>Minthara</strong> (Act 1 evil path or Act 2 knockout method). These companions join later in the game and are NOT the 6 origin companions you meet in Act 1 (Shadowheart, Gale, Astarion, Lae\'zel, Wyll, Karlach). You may still hire mercenaries from Withers if allowed.');
+            }
+            
+            // Rotating roster clarifications
+            const hasRotatingRoster = challenge.partyComposition && challenge.partyComposition.some(p => 
+                p.includes('Rotating Roster') || p.includes('Musical Chairs')
+            );
+            
+            if (hasRotatingRoster) {
+                if (challenge.partyComposition.some(p => p.includes('Rotating Roster'))) {
+                    clarifications.push('<strong>Rotating Roster:</strong> Recruit ALL available companions. However, you may only have ONE companion in your active party at a time. Every time you visit camp (short rest, long rest, or just traveling to camp), you MUST swap out your current companion for a different one. Never use the same companion two camp visits in a row. Track companion rotation carefully!');
+                }
+                
+                if (challenge.partyComposition.some(p => p.includes('Musical Chairs'))) {
+                    clarifications.push('<strong>Musical Chairs Party:</strong> Recruit ALL available companions. You may have up to 2 companions active at once. Every time you visit camp, you MUST change at least ONE of your active companions. Never keep the exact same duo two camp visits in a row. Example: Visit 1 = Shadowheart + Gale, Visit 2 = Shadowheart + Karlach (Gale swapped), Visit 3 = Lae\'zel + Karlach (Shadowheart swapped).');
+                }
+            }
+            
+            // Hirelings only clarification
+            const hasHirelingsOnly = challenge.partyComposition && challenge.partyComposition.some(p => 
+                p.includes('Hirelings Only')
+            );
+            
+            if (hasHirelingsOnly) {
+                clarifications.push('<strong>Hirelings Only Until Act 3:</strong> In Acts 1 and 2, you may ONLY use hired mercenaries from Withers. Do NOT recruit or use any story companions (Shadowheart, Gale, Astarion, Lae\'zel, Wyll, Karlach, Jaheira, Halsin) until you reach Act 3. Once in Act 3, you may finally recruit and use story companions. Build your own custom party with hirelings until then!');
+            }
+            
+            // No resting clarification
+            const hasNoResting = allModifiers.some(m => m.includes('no resting between fights'));
+            if (hasNoResting) {
+                clarifications.push('<strong>No Resting Between Fights:</strong> Complete ALL quests in a zone before resting (e.g., finish entire Blighted Village). No jumping between areas. You must commit to finishing a full location before taking any rest.');
+            }
+            
+            // Companion ending clarifications
+            const hasHappyEnding = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.includes('Happy ending for everyone'));
+            const hasTragicEnding = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.includes('Tragic ending for everyone'));
+            
+            if (hasHappyEnding) {
+                clarifications.push('<strong>Happy Ending Details:</strong> Astarion rejects ascension + kills Cazador. Gale rejects Crown of Karsus. Shadowheart spares parents (loses powers). Lae\'zel rejects Vlaakith + stays on Material Plane. Karlach goes to Avernus WITH Wyll (both go together). Wyll breaks pact but survives.');
+            }
+            
+            if (hasTragicEnding) {
+                clarifications.push('<strong>Tragic Ending Details:</strong> Ascend Astarion. Make Gale become god with Crown. Make Shadowheart kill parents (full Shar devotion). Send Lae\'zel back to Vlaakith. Let Karlach die OR become mindflayer. Keep Wyll as Duke (don\'t let him go to Avernus).');
+            }
+            
+            // Paladin oath clarifications
+            const hasPaladinOath = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.toLowerCase().includes('paladin'));
+            
+            if (hasPaladinOath) {
+                clarifications.push('<strong>Paladin Oath Rules:</strong> Breaking oath = do morally wrong actions for your tenets. Killing Oathbreaker Knight = prevents oath restoration permanently. Cycling oath = break it, restore it, break it again repeatedly.');
+            }
+            
+            // Iron Throne clarifications
+            const hasIronThrone = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.includes('Iron Throne'));
+            
+            if (hasIronThrone) {
+                clarifications.push('<strong>Iron Throne Mission:</strong> This is the underwater prison rescue in Act 3. You have limited turns before it floods. Follow EXACTLY what your modifier says - only save who is listed, let everyone else drown.');
+            }
+            
+            // Withers attack clarification
+            const hasWithersAttack = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.includes('attack Withers'));
+            
+            if (hasWithersAttack) {
+                clarifications.push('<strong>Attacking Withers WARNING:</strong> Withers may become hostile or disappear if attacked. You will lose access to respec, resurrection, and hirelings. This makes the run MUCH harder. Prepare accordingly.');
+            }
+            
+            // Forced departure clarifications
+            const hasForcedDeparture = challenge.roleplayRestrictions && 
+                challenge.roleplayRestrictions.some(r => r.includes('make her leave') || r.includes('make him leave') || r.includes('until he leaves') || r.includes('until she leaves'));
+            
+            if (hasForcedDeparture) {
+                clarifications.push('<strong>Forced Companion Departures:</strong> Companions will PERMANENTLY leave if you: do their personal quest without them, refuse their needs, or betray their core values. Once they leave, they CANNOT be recruited again.');
+            }
+            
+            // Fighter philosophy clarification
+            const hasFighterPhilosophy = challenge.classChallenge && 
+                challenge.classChallenge.toLowerCase().includes('fighter who philosophizes');
+            
+            if (hasFighterPhilosophy) {
+                clarifications.push('<strong>Philosophizing Fighter:</strong> During combat, you must SKIP your turn at least 3 times and open your inventory to read a book or scroll instead of attacking. Books include "The Necromancy of Thay," camp books, notes, letters, or any readable item. This wastes your action for that turn.');
+            }
+            
+            // Druid who hates nature clarification
+            const hasDruidNature = challenge.classChallenge && 
+                challenge.classChallenge.toLowerCase().includes('druid who hates nature');
+            
+            if (hasDruidNature) {
+                clarifications.push('<strong>Nature-Hating Druid:</strong> You CANNOT cast any nature-themed spells (Goodberry, Entangle, Spike Growth, Call Lightning, etc.). Take Magic Initiate feat (Warlock) at level 4 to get Eldritch Blast cantrip. Spam Eldritch Blast as your primary attack. You can still Wild Shape but avoid nature spells entirely.');
+            }
+            
+            // Unpopular race clarification
+            const hasUnpopularRace = challenge.raceChallenge && 
+                challenge.raceChallenge.toLowerCase().includes('most unpopular race');
+            
+            if (hasUnpopularRace) {
+                clarifications.push('<strong>Most Unpopular Race:</strong> Based on player statistics, the least popular races are <strong>Githyanki</strong> (~3-5% of players) and <strong>Half-Orc</strong> (~4-6% of players). Choose either: <strong>Githyanki</strong> (alien appearance, aggressive culture, no nose) OR <strong>Half-Orc</strong> (tusks, limited cosmetic options, considered less aesthetically appealing by many players). Both races are mechanically strong but visually niche.');
+            }
+            
+            // Unpopular class clarification
+            const hasUnpopularClass = challenge.classChallenge && 
+                challenge.classChallenge.toLowerCase().includes('most unpopular class');
+            
+            if (hasUnpopularClass) {
+                clarifications.push('<strong>Most Unpopular Class:</strong> Based on player statistics, the least popular classes are <strong>Monk</strong> (~6-8% of players) and <strong>Ranger</strong> (~5-7% of players). Choose either: <strong>Monk</strong> (unarmed combat focused, limited equipment options, very specific playstyle) OR <strong>Ranger</strong> (pet class that underperforms, overshadowed by other martials, mechanically weaker). Both are viable but less popular choices.');
+            }
+            
+            // Origin character qualifier clarifications
+            if (challenge.roleplayRestrictions) {
+                const hasKarlachPeaceful = challenge.roleplayRestrictions.some(r => r.includes('Karlach: Peaceful Barbarian'));
+                const hasKarlachGlass = challenge.roleplayRestrictions.some(r => r.includes('Karlach: Glass Tank'));
+                const hasShadowheartShar = challenge.roleplayRestrictions.some(r => r.includes('Shadowheart: Shar\'s Perfect Cleric'));
+                const hasShadowheartSelune = challenge.roleplayRestrictions.some(r => r.includes('Shadowheart: Secret Selûnite'));
+                const hasGaleHumble = challenge.roleplayRestrictions.some(r => r.includes('Gale: The Humble Wizard'));
+                const hasMinscPhilosopher = challenge.roleplayRestrictions.some(r => r.includes('Minsc: The Philosopher'));
+                
+                if (hasKarlachPeaceful) {
+                    clarifications.push('<strong>Karlach: Peaceful Barbarian:</strong> If playing as or recruiting Karlach, she must NEVER use Rage. Try to talk through problems and avoid violence when possible. This goes against her entire character design but creates an interesting pacifist barbarian challenge.');
+                }
+                
+                if (hasKarlachGlass) {
+                    clarifications.push('<strong>Karlach: Glass Tank:</strong> If playing as or recruiting Karlach, respec her to have 8 CON. Never use defensive abilities. ALWAYS use Reckless Attack (attack at advantage but enemies have advantage against you). She becomes a glass cannon who dies easily but hits hard. The opposite of a tank barbarian.');
+                }
+                
+                if (hasShadowheartShar) {
+                    clarifications.push('<strong>Shadowheart: Shar\'s Perfect Cleric:</strong> If playing as or recruiting Shadowheart, choose ONLY Shar-aligned dialogue. Never express doubt. Complete Shar trials perfectly. Kill her parents. Become a Dark Justiciar. Full devotion to the Dark Lady with no redemption arc.');
+                }
+                
+                if (hasShadowheartSelune) {
+                    clarifications.push('<strong>Shadowheart: Secret Selûnite:</strong> If playing as or recruiting Shadowheart, reject Shar at EVERY opportunity. Question her faith constantly. Save her parents. Embrace Selûne dialogue. This is the opposite of her default arc - she starts doubting immediately.');
+                }
+                
+                if (hasGaleHumble) {
+                    clarifications.push('<strong>Gale: The Humble Wizard:</strong> If playing as or recruiting Gale, reject the Crown of Karsus. Never brag about intelligence or magical prowess. Use self-deprecating dialogue only. This goes against his naturally arrogant personality. He must learn humility.');
+                }
+                
+                if (hasMinscPhilosopher) {
+                    clarifications.push('<strong>Minsc: The Philosopher:</strong> If playing as or recruiting Minsc, quote literature and philosophy instead of charging into battle. Discuss ethics with enemies. Try to avoid combat. This contradicts his "punch first, think never" personality. Boo is confused.');
+                }
+            }
+            
+            // Class-specific special challenges requiring that class
+            const classSpecificChallenges = [
+                { className: 'Karlach', challengeText: 'Throwing Problem' },
+                { className: 'Astarion', challengeText: 'Fashion Disaster' },
+                { className: 'Gale', challengeText: 'Wizard\'s Pride' },
+                { className: 'Barbarian', challengeText: 'Libarbarian' },
+                { className: 'Barbarian', challengeText: 'Glass Barbarian' },
+                { className: 'Barbarian', challengeText: 'Allergic to Rage' },
+                { className: 'Druid', challengeText: 'Disappointing Druid' }
+            ];
+            
+            if (challenge.specialChallenges) {
+                for (const spec of classSpecificChallenges) {
+                    const hasChallenge = challenge.specialChallenges.some(c => c.includes(spec.challengeText));
+                    if (hasChallenge) {
+                        clarifications.push(`<strong>${spec.challengeText} Requirement:</strong> This challenge requires ${spec.className} in your party. You must have ${spec.className} as either your main character OR recruit them as a companion, regardless of other party composition rules.`);
+                    }
+                }
+                
+                // Fish Slapper clarification
+                if (challenge.specialChallenges.some(c => c.includes('Fish Slapper'))) {
+                    clarifications.push('<strong>Fish Slapper:</strong> Collect EVERY fish (rotten or regular) you find. Use ONLY fish as thrown weapons in combat. Fish locations include beaches, docks, vendor stalls, and random containers. Throw fish at enemies - no other weapons allowed.');
+                }
+                
+                // Idol Collector clarification
+                if (challenge.specialChallenges.some(c => c.includes('Idol Collector'))) {
+                    clarifications.push('<strong>Idol Collector:</strong> You must steal/take every idol in the game. This includes the Selûnite Prayer Sheet in Grymforge with the trapped walkway - you MUST get it despite traps. Collect idols from all temples, shrines, and hidden locations.');
+                }
+                
+                // Selune items clarification
+                if (challenge.specialChallenges.some(c => c.includes('Selune\'s Gift'))) {
+                    clarifications.push('<strong>Selune\'s Gift to Shadowheart:</strong> Collect ALL Selûne-related items (weapons, armor, accessories, decorations). Send them all to Shadowheart. Equip her with ONLY Selûne items for the ENTIRE game. This is deeply ironic given her Shar worship. Examples: Selûnite Prayer Sheet, Moon Devotion Robe, Selûne\'s Spear of Night.');
+                }
+                
+                // Shadowheart's Choice clarification
+                if (challenge.specialChallenges.some(c => c.includes('Shadowheart\'s Choice'))) {
+                    clarifications.push('<strong>Shadowheart\'s Choice:</strong> During the Nightsong confrontation, you CANNOT influence Shadowheart\'s decision. Do NOT pass persuasion checks. Do NOT give advice. Let her choose to kill or spare Nightsong entirely on her own. Accept whatever outcome she chooses.');
+                }
+                
+                // No Reroll clarification
+                if (challenge.specialChallenges.some(c => c.includes('No Reroll'))) {
+                    clarifications.push('<strong>No Reroll Allowed:</strong> You cannot use Karmic Dice or reroll any ability check, saving throw, or attack roll UNLESS the game mechanically forces you to (like Halfling Luck racial). Accept all failures. This makes the game significantly harder.');
+                }
+                
+                // Furniture Destroyer clarification
+                if (challenge.specialChallenges.some(c => c.includes('Furniture Destroyer'))) {
+                    clarifications.push('<strong>Furniture Destroyer:</strong> You must MAIN ATTACK (not examine, not lockpick) ALL wooden furniture that can be attacked. This includes: bookcases, chests, crates, wardrobes, shelves, broken furniture. If the game shows "Attack" as an option when you click on it, you MUST destroy it. Leave a trail of broken furniture everywhere. NPCs may become hostile.');
+                }
+                
+                // Scroll Hoarder clarification
+                if (challenge.specialChallenges.some(c => c.includes('Scroll Hoarder'))) {
+                    clarifications.push('<strong>Scroll Hoarder:</strong> Collect EVERY spell scroll you find. Never let Gale consume them to learn spells. Never let any wizard use "Learn Spell" on them. Never cast ANY scrolls in combat. Just carry them all and admire your collection. Gale will be constantly hungry and begging. Deny him. This is your hoard.');
+                }
+                
+                // Ingredient Hoarder clarification
+                if (challenge.specialChallenges.some(c => c.includes('Ingredient Hoarder'))) {
+                    clarifications.push('<strong>Ingredient Hoarder:</strong> Collect EVERY crafting ingredient (mugwort, wispweed, belladonna, ashes, bones, etc.). Never craft potions, coatings, or items UNLESS required by a quest. Just carry hundreds of ingredients. Your inventory will be a garden/graveyard. Alchemy is forbidden.');
+                }
+                
+                // Potion Prohibition clarification
+                if (challenge.specialChallenges.some(c => c.includes('Potion Prohibition'))) {
+                    clarifications.push('<strong>Potion Prohibition:</strong> Collect ALL potions you find. You may ONLY drink basic Potion of Healing. All other potions (Greater Healing, Speed, Strength, Invisibility, etc.) must be hoarded - never consumed. You can throw them to heal allies but cannot use them for buffs/effects. Watch your collection grow while your options shrink.');
+                }
+                
+                // Buff Collector clarification
+                if (challenge.specialChallenges.some(c => c.includes('Buff Collector'))) {
+                    clarifications.push('<strong>Buff Collector:</strong> Collect as many buffs as possible before major fights. Get buffs from: NPCs (Volo\'s eye, hag\'s hair), statues (Selûne, Mystra), quest rewards, potions, spells, items. Stack every buff you can find. Screenshot your buff bar when it\'s maxed out. This is buff hoarding at its finest.');
+                }
+                
+                // Arrow Mismanagement clarification
+                if (challenge.specialChallenges.some(c => c.includes('Arrow Mismanagement'))) {
+                    clarifications.push('<strong>Arrow Mismanagement:</strong> Collect ALL arrow types. You must deliberately use the WRONG arrows: Fire arrows on fire immune enemies, Ice arrows on ice immune, Arrow of Dragon Slaying on goblins/rats, basic arrows on dragons. Maximum inefficiency. Waste your best ammunition on trash mobs and your worst on bosses.');
+                }
+                
+                // Water Hoarder clarification
+                if (challenge.specialChallenges.some(c => c.includes('Water Hoarder'))) {
+                    clarifications.push('<strong>Water Hoarder:</strong> Collect every water bottle, jug, bucket, and container. Never use water to extinguish fires. Never throw water in combat. Just carry it all. Watch the world burn while you clutch your precious water collection. Fires spread? Not your problem - you\'re saving the water.');
+                }
+                
+                // Shadowheart Origin clarification
+                if (challenge.specialChallenges.some(c => c.includes('Shadowheart Origin: Githyanki Army'))) {
+                    clarifications.push('<strong>Shadowheart Origin: Githyanki Army:</strong> You MUST play as origin Shadowheart. Your ENTIRE party must be githyanki (respec all companions to githyanki if possible with mods, or only recruit githyanki NPCs). You MUST recruit Lae\'zel and romance her. This OVERRIDES all other race and romance challenges.');
+                }
+                
+                // Lae'zel Origin clarification
+                if (challenge.specialChallenges.some(c => c.includes('Lae\'zel Origin: Wizard Academy'))) {
+                    clarifications.push('<strong>Lae\'zel Origin: Wizard Academy:</strong> You MUST play as origin Lae\'zel. ALL companions must be respecced to Wizard class. ALL companions must be elf or human race only. You MUST romance Shadowheart. This OVERRIDES all other race, class, and romance challenges.');
+                }
+            }
+            
+            return clarifications;
+        }
+
+        function copyChallenge() {
+            const text = getChallengeText();
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Challenge copied to clipboard! 📋');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Challenge copied to clipboard! 📋');
+            });
+        }
+
+        function saveChallenge() {
+            const text = getChallengeText();
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bg3_challenge.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Challenge saved! 💾');
+        }
+
+        function getChallengeText() {
+            if (!currentChallenge) return '';
+            
+            let text = '=== BALDUR\'S GATE 3 CHALLENGE RUN ===\n\n';
+            text += `Character: ${currentChallenge.character}\n`;
+            text += `Class: ${currentChallenge.playerClass}\n`;
+            text += `Race: ${currentChallenge.race}\n\n`;
+
+            if (currentChallenge.partyComposition.length > 0) {
+                text += '👥 PARTY COMPOSITION:\n';
+                currentChallenge.partyComposition.forEach(item => text += `  - ${item}\n`);
+                text += '\n';
+            }
+
+            if (currentChallenge.combatRestrictions.length > 0) {
+                text += '⚔️ COMBAT RESTRICTIONS:\n';
+                currentChallenge.combatRestrictions.forEach(item => text += `  - ${item}\n`);
+                text += '\n';
+            }
+
+            if (currentChallenge.difficultyModifiers.length > 0) {
+                text += '🔥 DIFFICULTY MODIFIERS:\n';
+                currentChallenge.difficultyModifiers.forEach(item => text += `  - ${item}\n`);
+                text += '\n';
+            }
+
+            if (currentChallenge.roleplayRestrictions.length > 0) {
+                text += '🎭 ROLEPLAY RESTRICTIONS:\n';
+                currentChallenge.roleplayRestrictions.forEach(item => text += `  - ${item}\n`);
+                text += '\n';
+            }
+
+            if (currentChallenge.specialChallenges.length > 0) {
+                text += '⭐ SPECIAL CHALLENGES:\n';
+                currentChallenge.specialChallenges.forEach(item => text += `  - ${item}\n`);
+                text += '\n';
+            }
+
+            if (currentChallenge.raceChallenge) {
+                text += `🧝 RACE CHALLENGE: ${currentChallenge.raceChallenge}\n\n`;
+            }
+
+            if (currentChallenge.classChallenge) {
+                text += `🎯 CLASS CHALLENGE: ${currentChallenge.classChallenge}\n\n`;
+            }
+
+            if (currentChallenge.romanceChallenge) {
+                text += `💕 ROMANCE CHALLENGE: ${currentChallenge.romanceChallenge}\n\n`;
+            }
+
+            return text;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Share Code
+        function showShareCode() {
+            if (!currentChallenge) return;
+            const code = btoa(JSON.stringify(currentChallenge));
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 10000; max-width: 500px; width: 90%; color: var(--text-color);';
+            modal.innerHTML = `
+                <h3 style="margin-bottom: 15px;">📤 Share Challenge</h3>
+                <p style="margin-bottom: 15px;">Share this code with others:</p>
+                <textarea id="share-code-text" readonly onclick="this.select()" style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 5px; background: var(--input-bg); color: var(--text-color); font-family: monospace; resize: none;" rows="4">${code}</textarea>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button onclick="copyShareCode()" style="flex: 1; background: #28a745; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">Copy Code</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="flex: 1; background: #6c757d; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function copyShareCode() {
+            const textarea = document.getElementById('share-code-text');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile
+            
+            try {
+                // Try modern clipboard API first
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    showToast('Code copied! 📋');
+                }).catch(() => {
+                    // Fallback to execCommand
+                    document.execCommand('copy');
+                    showToast('Code copied! 📋');
+                });
+            } catch (err) {
+                // Final fallback
+                document.execCommand('copy');
+                showToast('Code copied! 📋');
+            }
+        }
+
+        // Load Challenge Dialog
+        function showLoadChallengeDialog() {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 10000; max-width: 500px; width: 90%; color: var(--text-color);';
+            modal.innerHTML = `
+                <h3 style="margin-bottom: 15px;">📥 Load Challenge</h3>
+                <p style="margin-bottom: 15px;">Paste a challenge code:</p>
+                <textarea id="load-code-input" placeholder="Paste code here..." style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 5px; background: var(--input-bg); color: var(--text-color); font-family: monospace; resize: none;" rows="4"></textarea>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button onclick="loadSharedChallenge()" style="flex: 1; background: #28a745; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Load</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="flex: 1; background: #6c757d; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function loadSharedChallenge() {
+            const code = document.getElementById('load-code-input').value.trim();
+            if (!code) {
+                alert('Please paste a challenge code');
+                return;
+            }
+            try {
+                const challenge = JSON.parse(atob(code));
+                currentChallenge = challenge;
+                displayChallenge(challenge);
+                document.querySelector('[style*="z-index: 10000"]').remove();
+                showToast('Challenge loaded! 📥');
+            } catch (e) {
+                alert('Invalid challenge code');
+            }
+        }
+
+        // Reroll Menu
+        function showRerollMenu() {
+            if (!currentChallenge) return;
+            const categories = [];
+            if (currentChallenge.partyComposition.length) categories.push({name: 'Party', key: 'partyComposition'});
+            if (currentChallenge.combatRestrictions.length) categories.push({name: 'Combat', key: 'combatRestrictions'});
+            if (currentChallenge.difficultyModifiers.length) categories.push({name: 'Difficulty', key: 'difficultyModifiers'});
+            if (currentChallenge.roleplayRestrictions.length) categories.push({name: 'Roleplay', key: 'roleplayRestrictions'});
+            if (currentChallenge.specialChallenges.length) categories.push({name: 'Special', key: 'specialChallenges'});
+
+            let html = '<h3>🎲 Reroll One Modifier</h3><p>Select a modifier to reroll:</p><div style="max-height: 300px; overflow-y: auto;">';
+            
+            // Add individual challenge rerolls at the top
+            if (currentChallenge.raceChallenge) {
+                html += '<h4 style="margin-top: 15px;">🧝 Race Challenge</h4>';
+                html += `<div style="padding: 8px; margin: 5px 0; background: var(--result-section-bg); border-radius: 5px; cursor: pointer;" onclick="rerollModifier('raceChallenge', 0)">
+                    ${currentChallenge.raceChallenge} <span style="float: right;">🔄</span>
+                </div>`;
+            }
+            
+            if (currentChallenge.classChallenge) {
+                html += '<h4 style="margin-top: 15px;">🎯 Class Challenge</h4>';
+                html += `<div style="padding: 8px; margin: 5px 0; background: var(--result-section-bg); border-radius: 5px; cursor: pointer;" onclick="rerollModifier('classChallenge', 0)">
+                    ${currentChallenge.classChallenge} <span style="float: right;">🔄</span>
+                </div>`;
+            }
+            
+            if (currentChallenge.romanceChallenge) {
+                html += '<h4 style="margin-top: 15px;">💕 Romance Challenge</h4>';
+                html += `<div style="padding: 8px; margin: 5px 0; background: var(--result-section-bg); border-radius: 5px; cursor: pointer;" onclick="rerollModifier('romanceChallenge', 0)">
+                    ${currentChallenge.romanceChallenge} <span style="float: right;">🔄</span>
+                </div>`;
+            }
+            
+            // Add array-based categories
+            for (const cat of categories) {
+                html += `<h4 style="margin-top: 15px;">${cat.name}</h4>`;
+                currentChallenge[cat.key].forEach((mod, i) => {
+                    html += `<div style="padding: 8px; margin: 5px 0; background: var(--result-section-bg); border-radius: 5px; cursor: pointer;" onclick="rerollModifier('${cat.key}', ${i})">
+                        ${mod} <span style="float: right;">🔄</span>
+                    </div>`;
+                });
+            }
+            html += '</div>';
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 10000; max-width: 600px; width: 90%; color: var(--text-color);';
+            modal.innerHTML = html + '<button onclick="this.parentElement.remove()" style="width: 100%; margin-top: 15px; background: #6c757d; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>';
+            document.body.appendChild(modal);
+        }
+
+        function rerollModifier(category, index) {
+            let sourceArray;
+            
+            // Handle single-value challenges
+            if (category === 'raceChallenge') {
+                sourceArray = BG3Data.raceChallenges;
+                currentChallenge.raceChallenge = randomChoice(sourceArray);
+            } else if (category === 'classChallenge') {
+                sourceArray = BG3Data.classChallenges;
+                currentChallenge.classChallenge = randomChoice(sourceArray);
+            } else if (category === 'romanceChallenge') {
+                sourceArray = BG3Data.romanceChallenges;
+                currentChallenge.romanceChallenge = randomChoice(sourceArray);
+            } else {
+                // Handle array-based categories
+                if (category === 'partyComposition') sourceArray = BG3Data.partyComposition;
+                else if (category === 'combatRestrictions') sourceArray = BG3Data.combatRestrictions;
+                else if (category === 'difficultyModifiers') sourceArray = BG3Data.difficultyModifiers;
+                else if (category === 'roleplayRestrictions') sourceArray = BG3Data.roleplayRestrictions;
+                else if (category === 'specialChallenges') sourceArray = BG3Data.specialChallenges;
+
+                const newMod = randomChoice(sourceArray);
+                currentChallenge[category][index] = newMod;
+            }
+            
+            document.querySelector('[style*="z-index: 10000"]').remove();
+            displayChallenge(currentChallenge);
+            showToast('Modifier rerolled! 🎲');
+        }
+
+        // Streamer Mode
+        function showStreamerMode() {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 10000; max-width: 800px; width: 90%; max-height: 85vh; overflow-y: auto; color: var(--text-color);';
+            
+            let html = `
+                <h3 style="color: #9146FF; margin-bottom: 10px;">📺 Streamer Mode - Chat Voting</h3>
+                <p style="margin-bottom: 20px;">Generate random options for each category and let chat vote A, B, C, D, or E!</p>
+                <button onclick="generateStreamerVotes()" style="width: 100%; background: linear-gradient(135deg, #9146FF 0%, #6441a5 100%); color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600; margin-bottom: 20px;">
+                    🎲 Generate Vote Options
+                </button>
+                <div id="streamer-votes-display"></div>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="copyStreamerVotes()" id="copy-votes-btn" style="flex: 1; background: #28a745; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: none;">📋 Copy All Votes</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="flex: 1; background: #6c757d; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer;">Close</button>
+                </div>
+            `;
+            modal.innerHTML = html;
+            document.body.appendChild(modal);
+        }
+
+        let streamerVoteText = '';
+
+        function generateStreamerVotes() {
+            const categories = [
+                { name: 'Party Composition', data: BG3Data.partyComposition, emoji: '👥' },
+                { name: 'Combat Restrictions', data: BG3Data.combatRestrictions, emoji: '⚔️' },
+                { name: 'Difficulty Modifiers', data: BG3Data.difficultyModifiers, emoji: '🔥' },
+                { name: 'Roleplay Restrictions', data: BG3Data.roleplayRestrictions, emoji: '🎭' },
+                { name: 'Special Challenges', data: BG3Data.specialChallenges, emoji: '⭐' },
+                { name: 'Romance Challenges', data: BG3Data.romanceChallenges, emoji: '💕' }
+            ];
+
+            let displayHtml = '';
+            let copyText = '═══════════════════════════════════════\n';
+            copyText += '    📺 STREAMER CHALLENGE VOTES 📺\n';
+            copyText += '═══════════════════════════════════════\n\n';
+            copyText += 'Chat: Type A, B, C, D, or E to vote!\n\n';
+
+            for (const category of categories) {
+                const options = randomSample(category.data, 5);
+                
+                displayHtml += `<div style="background: var(--result-section-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #9146FF;">`;
+                displayHtml += `<h4 style="color: #9146FF; margin-bottom: 15px; font-size: 1.2em;">${category.emoji} ${category.name}</h4>`;
+                
+                copyText += `${category.emoji} ${category.name.toUpperCase()}\n`;
+                copyText += '─────────────────────────────────────\n';
+
+                const letters = ['A', 'B', 'C', 'D', 'E'];
+                options.forEach((option, i) => {
+                    const letter = letters[i];
+                    displayHtml += `<div style="padding: 10px; margin: 8px 0; background: var(--input-bg); border-radius: 5px; border-left: 3px solid #9146FF;">
+                        <strong style="color: #9146FF; font-size: 1.1em;">${letter})</strong> ${option}
+                    </div>`;
+                    copyText += `${letter}) ${option}\n`;
+                });
+                
+                displayHtml += `</div>`;
+                copyText += '\n';
+            }
+
+            // Add warnings
+            displayHtml += `<div style="background: #fff3cd; padding: 15px; border-radius: 10px; border-left: 4px solid #ffc107; margin-bottom: 15px;">
+                <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Important Notes</h4>
+                <p style="color: #856404; margin: 5px 0;"><strong>Origin Characters:</strong> If chat votes for an origin character AND a different race challenge, player will need the "Faces of Faerun" or similar mod to respec origin race.</p>
+                <p style="color: #856404; margin: 5px 0;"><strong>Conflicts:</strong> Some combinations may be impossible (e.g., "Solo run" + "All same class party"). Use common sense!</p>
+                <p style="color: #856404; margin: 5px 0;"><strong>Party Conflicts:</strong> "Camp NPCs only" means NO standard companions, only Scratch, Owlbear, Volo, etc.</p>
+            </div>`;
+
+            copyText += '═══════════════════════════════════════\n';
+            copyText += '⚠️ IMPORTANT NOTES:\n';
+            copyText += '═══════════════════════════════════════\n';
+            copyText += '• Origin + Different Race = Need mod (Faces of Faerun)\n';
+            copyText += '• Some combos may conflict (use judgment!)\n';
+            copyText += '• "Camp NPCs only" = NO standard companions\n\n';
+
+            document.getElementById('streamer-votes-display').innerHTML = displayHtml;
+            document.getElementById('copy-votes-btn').style.display = 'block';
+            streamerVoteText = copyText;
+            showToast('Vote options generated! 🎲');
+        }
+
+        function copyStreamerVotes() {
+            const textarea = document.createElement('textarea');
+            textarea.value = streamerVoteText;
+            textarea.style.position = 'fixed';
+            textarea.style.top = '0';
+            textarea.style.left = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                navigator.clipboard.writeText(streamerVoteText).then(() => {
+                    showToast('Vote options copied! 📺');
+                }).catch(() => {
+                    document.execCommand('copy');
+                    showToast('Vote options copied! 📺');
+                });
+            } catch (err) {
+                document.execCommand('copy');
+                showToast('Vote options copied! 📺');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+
+        // Dice Roller & Random Number Generator
+        function showRandomNumberGenerator() {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 10000; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--text-color);';
+            modal.innerHTML = `
+                <h3 style="color: #667eea; margin-bottom: 10px;">🎲 Dice Roller & Random Number Generator</h3>
+                <p style="margin-bottom: 20px;">Roll D&D dice or generate random numbers!</p>
+                
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4 style="color: white; margin: 0 0 10px 0;">Single Dice Rolls</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px;">
+                        <button onclick="rollDice(4)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d4</button>
+                        <button onclick="rollDice(6)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d6</button>
+                        <button onclick="rollDice(8)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d8</button>
+                        <button onclick="rollDice(10)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d10</button>
+                        <button onclick="rollDice(12)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d12</button>
+                        <button onclick="rollDice(20)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d20</button>
+                        <button onclick="rollDice(100)" style="background: white; color: #667eea; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">d100</button>
+                    </div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4 style="color: white; margin: 0 0 10px 0;">Multiple Dice Rolls</h4>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <input type="number" id="dice-count" value="2" min="1" max="20" style="width: 80px; padding: 10px; border: none; border-radius: 5px; font-weight: 600;">
+                        <span style="color: white; font-size: 1.2em; font-weight: 600;">d</span>
+                        <select id="dice-type" style="width: 100px; padding: 10px; border: none; border-radius: 5px; font-weight: 600;">
+                            <option value="4">4</option>
+                            <option value="6" selected>6</option>
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="20">20</option>
+                            <option value="100">100</option>
+                        </select>
+                        <button onclick="rollMultipleDice()" style="flex: 1; background: white; color: #11998e; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Roll!</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;">
+                        <button onclick="setMultipleDice(2, 6)" style="background: white; color: #11998e; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">2d6</button>
+                        <button onclick="setMultipleDice(3, 6)" style="background: white; color: #11998e; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">3d6</button>
+                        <button onclick="setMultipleDice(4, 6)" style="background: white; color: #11998e; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">4d6</button>
+                        <button onclick="setMultipleDice(8, 6)" style="background: white; color: #11998e; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">8d6 🔥</button>
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 20px;">Custom Range:</h4>
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Min:</label>
+                    <input type="number" id="rng-min" value="1" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                </div>
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Max:</label>
+                    <input type="number" id="rng-max" value="100" style="width: 100%; padding: 10px; border: 2px solid var(--input-border); border-radius: 5px; background: var(--input-bg); color: var(--text-color);">
+                </div>
+                
+                <div id="dice-result" style="margin: 20px 0; padding: 30px; background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); color: white; border-radius: 10px; text-align: center; font-size: 3em; font-weight: bold; display: none;"></div>
+                
+                <div id="multiple-dice-result" style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 10px; display: none;">
+                    <div style="font-size: 1.2em; font-weight: 600; margin-bottom: 10px;">Individual Rolls:</div>
+                    <div id="individual-rolls" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;"></div>
+                    <div style="font-size: 2.5em; font-weight: bold; text-align: center; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                        Total: <span id="dice-total">0</span>
+                    </div>
+                </div>
+                
+                <button onclick="generateRandomNumber()" style="width: 100%; background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600; margin: 10px 0;">Generate Number</button>
+                <button onclick="this.parentElement.remove()" style="width: 100%; background: #6c757d; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer;">Close</button>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function setMultipleDice(count, sides) {
+            document.getElementById('dice-count').value = count;
+            document.getElementById('dice-type').value = sides;
+            rollMultipleDice();
+        }
+
+        function rollMultipleDice() {
+            const count = parseInt(document.getElementById('dice-count').value);
+            const sides = parseInt(document.getElementById('dice-type').value);
+            
+            if (isNaN(count) || isNaN(sides) || count < 1 || count > 20) {
+                alert('Please enter 1-20 dice');
+                return;
+            }
+            
+            const rolls = [];
+            let total = 0;
+            
+            for (let i = 0; i < count; i++) {
+                const roll = Math.floor(Math.random() * sides) + 1;
+                rolls.push(roll);
+                total += roll;
+            }
+            
+            // Hide single dice result
+            document.getElementById('dice-result').style.display = 'none';
+            
+            // Show multiple dice result
+            const resultDiv = document.getElementById('multiple-dice-result');
+            const individualRollsDiv = document.getElementById('individual-rolls');
+            const totalSpan = document.getElementById('dice-total');
+            
+            resultDiv.style.display = 'block';
+            
+            // Display individual rolls
+            individualRollsDiv.innerHTML = '';
+            rolls.forEach(roll => {
+                const rollDiv = document.createElement('div');
+                rollDiv.style.cssText = 'background: white; color: #11998e; padding: 10px 15px; border-radius: 8px; font-weight: 600; font-size: 1.2em; min-width: 40px; text-align: center;';
+                rollDiv.textContent = roll;
+                individualRollsDiv.appendChild(rollDiv);
+            });
+            
+            totalSpan.textContent = total;
+        }
+
+        function rollDice(sides) {
+            const result = Math.floor(Math.random() * sides) + 1;
+            const resultDiv = document.getElementById('dice-result');
+            
+            // Hide multiple dice result
+            document.getElementById('multiple-dice-result').style.display = 'none';
+            
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            resultDiv.textContent = result;
+        }
+
+        function generateRandomNumber() {
+            const min = parseInt(document.getElementById('rng-min').value);
+            const max = parseInt(document.getElementById('rng-max').value);
+            if (isNaN(min) || isNaN(max) || min > max) {
+                alert('Please enter valid numbers (min ≤ max)');
+                return;
+            }
+            const result = Math.floor(Math.random() * (max - min + 1)) + min;
+            const resultDiv = document.getElementById('dice-result');
+            
+            // Hide multiple dice result
+            document.getElementById('multiple-dice-result').style.display = 'none';
+            
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)';
+            resultDiv.textContent = result;
+        }
+        
+        function showFAQ() {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--container-bg); padding: 30px; border-radius: 10px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 10000; max-width: 800px; width: 90%; max-height: 85vh; overflow-y: auto; color: var(--text-color);';
+            
+            let html = `
+                <h3 style="color: #9146FF; margin-bottom: 20px;">❓ Frequently Asked Questions</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: How many modifiers should I actually use?</h4>
+                    <p style="line-height: 1.6;">A: We recommend <strong>1-2 modifiers per category</strong> for an enjoyable challenge. The generator may suggest many, but combining too many makes the game frustrating rather than fun. Cherry-pick your favorites!</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: Can I change origin character races?</h4>
+                    <p style="line-height: 1.6;">A: Only with mods like "Faces of Faerun". Withers can change CLASS but not RACE for origin companions. Custom Tav and hirelings can be any race without mods.</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: What if I get conflicting modifiers?</h4>
+                    <p style="line-height: 1.6;">A: The generator shows warnings for conflicts and suggests which to ignore or reroll. Use the "🎲 Reroll One" button to change a single conflicting modifier.</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: Can I save my challenge?</h4>
+                    <p style="line-height: 1.6;">A: Yes! Use the "💾 Save" button to download your challenge as a text file, or use "📤 Share" to generate a code you can reload later.</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: What's the difference between "Light" and "Extreme" difficulty?</h4>
+                    <p style="line-height: 1.6;">A: <strong>Light</strong> = 6 modifiers total, <strong>Medium</strong> = 11 modifiers, <strong>Extreme</strong> = 17+ modifiers. Start with Light if you're new to challenge runs!</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: What are "most unpopular" race and class?</h4>
+                    <p style="line-height: 1.6;">A: Choose either <strong>Githyanki or Half-Orc</strong> for race, and <strong>Monk or Ranger</strong> for class. These are the least-picked options based on player statistics (~3-8% of players).</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: Can I use this for multiplayer?</h4>
+                    <p style="line-height: 1.6;">A: Yes! Use "📺 Streamer Mode" to generate voting options for your audience, or have each player generate their own challenge for co-op chaos!</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: Do I need mods for any challenges?</h4>
+                    <p style="line-height: 1.6;">A: Most challenges work vanilla! Only changing origin companion races requires mods. Some challenges mention specific mods (like "Faces of Faerun") which the generator will flag.</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: What if a modifier seems impossible?</h4>
+                    <p style="line-height: 1.6;">A: Reroll it! Some combinations are intentionally difficult. The "🎲 Reroll One" button lets you swap out any single modifier while keeping the rest.</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: Can I suggest new modifiers?</h4>
+                    <p style="line-height: 1.6;">A: Absolutely! Click the "💌 Submit Ideas" button at the bottom of the page to send your suggestions. We love community ideas!</p>
+                </div>
+                
+                <div style="background: var(--result-section-bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                    <strong>💡 Pro Tip:</strong> Screenshot your challenge after generating it! It's easy to forget what you rolled, especially mid-playthrough.
+                </div>
+                
+                <button onclick="this.parentElement.remove()" style="width: 100%; margin-top: 20px; background: #6c757d; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>
+            `;
+            
+            modal.innerHTML = html;
+            document.body.appendChild(modal);
+        }
+    </script>
+    
+    <!-- FAQ and Contact Section -->
+    <div style="text-align: center; padding: 40px 20px; background: var(--result-section-bg); margin-top: 40px; border-top: 2px solid var(--border-color);">
+        <button onclick="showFAQ()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600; margin: 10px;">
+            ❓ FAQ & Tips
+        </button>
+        
+        <button onclick="copyEmailAddress()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600; margin: 10px;">
+            💌 Copy Email to Submit Ideas
+        </button>
+        
+        <script>
+        function copyEmailAddress() {
+            const email = 'Gwennylou@gmail.com';
+            navigator.clipboard.writeText(email).then(() => {
+                showToast('📧 Email copied! Gwennylou@gmail.com');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = email;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('📧 Email copied! Gwennylou@gmail.com');
+                } catch (err) {
+                    alert('Email: Gwennylou@gmail.com');
+                }
+                document.body.removeChild(textarea);
+            });
+        }
+        </script>
+        
+        <p style="margin-top: 20px; color: var(--text-color); opacity: 0.7; font-size: 0.9em;">
+            Have ideas for new modifiers? Send them to <strong>Gwennylou@gmail.com</strong>
+        </p>
+        
+        <p style="margin-top: 10px; color: var(--text-color); opacity: 0.5; font-size: 0.85em;">
+            BG3 Challenge Generator v2.0 | Created with ❤️ for the BG3 Community
+        </p>
+    </div>
+</body>
+</html>
