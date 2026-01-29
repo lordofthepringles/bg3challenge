@@ -301,6 +301,41 @@
             </p>
         </div>
 
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 20px; border-radius: 10px; margin: 20px auto; max-width: 1200px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 2px solid #2196F3;">
+            <h3 style="color: #0d47a1; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5em;">🔧</span> Mod Policy for Challenge Runs
+            </h3>
+            
+            <p style="margin: 0 0 15px 0; line-height: 1.6; color: #1565c0; font-size: 1.05em;">
+                <strong>Default: Play Vanilla BG3.</strong> Avoid mods when possible. Only use the approved mods listed below.
+            </p>
+            
+            <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 15px;">
+                <strong style="color: #155724; font-size: 1.1em;">✅ ALLOWED MODS:</strong>
+                <ul style="line-height: 1.8; margin: 10px 0 0 20px; color: #155724;">
+                    <li><strong>Achievement Enabler</strong> - Keep achievements active</li>
+                    <li><strong>Basket Full of Equipment</strong> - Extra storage for hoarder challenges</li>
+                    <li><strong>Better Containers</strong> - Organize inventory</li>
+                    <li><strong>Withers' Wardrobe</strong> - Appearance changes (cosmetic only)</li>
+                    <li><strong>Level 20</strong> - Extended leveling</li>
+                    <li><strong>Unlock Level Curve</strong> - Control XP gain</li>
+                    <li><strong>Faces of Faerun</strong> - Change companion races (REQUIRED for some challenges)</li>
+                    <li><strong>Quality of Life mods</strong> - ONLY if they don't bypass your challenge restrictions</li>
+                </ul>
+            </div>
+            
+            <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                <strong style="color: #721c24; font-size: 1.1em;">❌ NO OTHER MODS:</strong>
+                <p style="margin: 10px 0 0 0; color: #721c24; line-height: 1.6;">
+                    No cheat mods, no gameplay-altering mods, no mods that make challenges easier. <strong>When in doubt, don't use it.</strong>
+                </p>
+            </div>
+            
+            <p style="margin: 15px 0 0 0; line-height: 1.6; color: #1565c0; font-style: italic;">
+                💡 <strong>Console players:</strong> All challenges work on vanilla console! You're not missing out.
+            </p>
+        </div>
+
         <div class="controls">
             <div class="button-group">
                 <button class="btn-light" onclick="generateChallenge('light')">
@@ -2156,8 +2191,41 @@
                     <p style="line-height: 1.6;">A: Absolutely! Click the "💌 Submit Ideas" button at the bottom of the page to send your suggestions. We love community ideas!</p>
                 </div>
                 
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 10px;">Q: What mods can I use for challenge runs?</h4>
+                    <p style="line-height: 1.6; margin-bottom: 10px;">A: <strong>Avoid mods when possible.</strong> The generator is designed for vanilla BG3. However, these specific mods are allowed:</p>
+                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin: 10px 0;">
+                        <strong style="color: #155724;">✅ ALLOWED MODS:</strong>
+                        <ul style="line-height: 1.8; margin: 10px 0 0 20px; color: #155724;">
+                            <li><strong>Achievement Enabler</strong> - Keep achievements active</li>
+                            <li><strong>Basket Full of Equipment</strong> - Extra storage for hoarder challenges</li>
+                            <li><strong>Better Containers</strong> - Organize inventory</li>
+                            <li><strong>Withers' Wardrobe</strong> - Appearance changes (cosmetic only)</li>
+                            <li><strong>Level 20</strong> - Extended leveling</li>
+                            <li><strong>Unlock Level Curve</strong> - Control XP gain</li>
+                            <li><strong>Faces of Faerun</strong> - Change companion races (REQUIRED for some challenges)</li>
+                            <li><strong>Quality of Life mods</strong> - Allowed ONLY if they don't cheat any aspect of your challenge</li>
+                        </ul>
+                    </div>
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545; margin: 10px 0;">
+                        <strong style="color: #721c24;">❌ AVOID ALL OTHER MODS:</strong>
+                        <ul style="line-height: 1.8; margin: 10px 0 0 20px; color: #721c24;">
+                            <li>No cheat mods (unlimited gold, items, etc.)</li>
+                            <li>No mods that make challenges easier</li>
+                            <li>No gameplay-altering mods unless listed above</li>
+                            <li>No mods that bypass challenge restrictions</li>
+                        </ul>
+                    </div>
+                    <p style="line-height: 1.6; margin-top: 10px;"><strong>Rule:</strong> If a mod helps you bypass or trivialize your challenge, don't use it. Play as close to vanilla as possible!</p>
+                </div>
+                
                 <div style="background: var(--result-section-bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
                     <strong>💡 Pro Tip:</strong> Screenshot your challenge after generating it! It's easy to forget what you rolled, especially mid-playthrough.
+                </div>
+                
+                <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3; margin-top: 15px;">
+                    <strong style="color: #0d47a1;">🎮 Mod Policy for Challenge Runs:</strong>
+                    <p style="line-height: 1.6; margin: 10px 0 0 0; color: #1565c0;"><strong>Default: Play Vanilla.</strong> Only use the mods listed above. Quality of Life mods are allowed ONLY if they don't cheat any aspect of your specific challenge. When in doubt, play without mods. Console players: All challenges are designed to work on vanilla console!</p>
                 </div>
                 
                 <button onclick="this.parentElement.remove()" style="width: 100%; margin-top: 20px; background: #6c757d; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>
